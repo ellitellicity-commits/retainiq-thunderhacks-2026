@@ -1,92 +1,134 @@
 <div align="center">
 
-# RetainIQ
+<br />
 
-**Predict churn. Act early. Retain more.**
+<img src="https://img.shields.io/badge/ThunderHacks_2026-Algoma_University-00e5ff?style=for-the-badge&labelColor=0a0f1e" />
+&nbsp;
+<img src="https://img.shields.io/badge/Digital_Move-Gold_Sponsor_Challenge-f59e0b?style=for-the-badge&labelColor=0a0f1e" />
 
-*Built in 24 hours at ThunderHacks 2026 (Prototype)*
+<br />
+<br />
+
+# ⚡ RetainIQ
+
+### Know who's leaving. Reach them first.
+
+<br />
+
+**[Live Demo](https://retainiq-thunderhacks-2026.vercel.app)** · **[GitHub](https://github.com/ellitellicity-commits/retainiq-thunderhacks-2026)**
+
+<br />
 
 ---
 
 </div>
 
-## Overview
+<br />
 
-RetainIQ gives Digital Move IT & Telecom a single place to see which customers are drifting away — before they actually leave. It combines a machine learning churn model, a real-time alert system, and an AI email generator into one clean, fast dashboard.
+RetainIQ is a customer retention intelligence platform built for **Digital Move IT & Telecom** in 24 hours at ThunderHacks 2026. It watches your entire customer base in real time — scoring churn risk, mapping customer journeys, and drafting personalized outreach — so your sales team stops reacting and starts preventing.
 
-No more reactive sales calls after a customer has already gone quiet. RetainIQ surfaces the signal early.
+<br />
 
 ---
 
-## What it does
+## The product
+
+<br />
 
 **Dashboard**
-A live overview of your entire customer base. Churn risk scores visualized across every account, filterable by plan and risk level. Click any customer to pull up their full profile inline.
+Live churn risk scores across every account. Filterable by plan and risk level. Click any customer for an inline profile snapshot. Animated KPI cards and a colour-coded bar chart that updates as you filter.
+
+<br />
 
 **Customer Intelligence**
-A sortable, searchable table with sparkline trend charts, animated risk bars, and expandable detail panels. Every data point you need, none you don't.
+A full sortable, searchable table with mini sparkline trend charts, risk score bars, and plan badges. Click any row to expand a detail panel — six stats, a risk gauge, and a visual journey stage indicator — all inline, no page reload.
+
+<br />
 
 **Journey Map**
-Four stages — Onboarded, Active, At-Risk, Churned — rendered as a visual pipeline. Click into any stage to see exactly who's there and why.
+Four stages rendered as a live pipeline — Onboarded, Active, At-Risk, Churned. Click any stage to see exactly who is there, their risk scores, and the average health of that cohort. Animated fill bars show the distribution at a glance.
+
+<br />
 
 **Lifecycle**
-A scrollable, animated narrative for every customer. Watch their profile card morph from healthy to critical as you scroll through the story of their engagement decline.
+A carousel of all 25 customers. Select anyone and scroll through a three-act narrative of their engagement decline. A sticky profile card morphs smoothly between Active, Warning, and Critical states as you read — powered by Framer Motion.
+
+<br />
 
 **Alert Center**
-The customers who need a call today. A terminal-style AI panel drafts a unique, personalized retention email for each one — new copy every time you generate.
+The accounts that need a call today. A Mac-style terminal panel drafts a unique, personalized retention email for each one on demand. New sender, new subject, new copy — every single time. Typewriter effect included.
+
+<br />
 
 ---
 
-## Under the hood
+## How it works
 
-Machine learning model trained on customer spend, login frequency, days since last contact, support ticket volume, and contract length. Outputs a churn probability score from 0 to 100 for every account.
+The ML model trains on spend, login frequency, days since last contact, support ticket volume, and contract length. It outputs a probability score for every customer on startup. The email engine assembles copy from a pool of personas, openers, value props, and CTAs — producing thousands of unique combinations without a single API call.
 
-The email generator draws from a pool of sender personas, opening lines, value propositions, and calls-to-action — assembled dynamically so no two emails read the same.
+<br />
 
 ---
 
 ## Stack
 
-| | |
+<div align="center">
+
+| Layer | |
 |---|---|
 | Frontend | React · Framer Motion · Recharts |
-| Backend | Python · Flask |
-| Intelligence | scikit-learn · Pandas |
-| Design | Space Mono · DM Sans · CSS Variables |
+| Backend | Python · Flask · Flask-CORS |
+| Intelligence | scikit-learn · Pandas · NumPy |
+| Typography | Space Mono · DM Sans |
+| Deployment | Vercel |
+
+</div>
+
+<br />
 
 ---
 
-## Running it locally
+## Digital Move — sponsor pillars
+
+| | |
+|---|---|
+| Predictive churn scoring | Logistic regression model, score 0–100 per account |
+| Automated outreach drafts | Template engine, unique copy on every generation |
+| Customer journey mapping | Four-stage visual pipeline with expandable cohorts |
+| Real-time alerts dashboard | Alert Center with risk meters and live email drafting |
+
+<br />
+
+---
+
+## Running locally
 ```bash
 # Backend
 cd hackathon
 pip install flask flask-cors pandas scikit-learn numpy
 python3 app.py
+# → http://localhost:5000
 
 # Frontend
 cd hackathon/frontend
 npm install && npm start
+# → http://localhost:3000
 ```
 
----
-
-## Built for
-
-**ThunderHacks 2026** — The Frictionless Campus
-Digital Move IT & Telecom · Gold Sponsor Challenge
-
-Addresses all four required pillars — predictive churn scoring, automated outreach drafts, customer journey mapping, and real-time alerts.
+<br />
 
 ---
 
 ## Team
 
-**Ellison Naz** · **Rishav Bawa**
-
-*Algoma University · March 2026*
-
----
-
 <div align="center">
+
+**Ellison Naz** &nbsp;·&nbsp; **Rishav Bawa**
+
+*ThunderHacks 2026 · Algoma University · March 2026*
+
+<br />
+
 <sub>Built with focus and very little sleep.</sub>
+
 </div>
