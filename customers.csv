@@ -1,0 +1,26 @@
+id,name,email,plan,spend,logins,days_since_contact,contract_months,support_tickets,churned
+1,Alice Nguyen,alice@email.com,Pro,420,18,5,12,1,0
+2,Bob Martin,bob@email.com,Basic,90,3,45,3,5,1
+3,Carol Smith,carol@email.com,Pro,380,15,8,24,0,0
+4,David Lee,david@email.com,Basic,60,2,60,1,8,1
+5,Emma Wilson,emma@email.com,Enterprise,850,30,2,36,0,0
+6,Frank Chen,frank@email.com,Pro,310,12,12,12,2,0
+7,Grace Kim,grace@email.com,Basic,80,4,50,6,6,1
+8,Henry Brown,henry@email.com,Enterprise,920,35,1,48,0,0
+9,Isla Davis,isla@email.com,Pro,200,7,30,6,4,0
+10,James Taylor,james@email.com,Basic,50,1,75,1,10,1
+11,Karen White,karen@email.com,Pro,450,20,3,18,1,0
+12,Liam Johnson,liam@email.com,Basic,70,2,55,3,7,1
+13,Mia Garcia,mia@email.com,Enterprise,780,28,4,24,1,0
+14,Noah Martinez,noah@email.com,Pro,260,9,22,9,3,0
+15,Olivia Hall,olivia@email.com,Basic,110,5,40,6,4,1
+16,Paul Anderson,paul@email.com,Enterprise,1020,40,1,60,0,0
+17,Quinn Thomas,quinn@email.com,Pro,330,13,15,12,2,0
+18,Rachel Jackson,rachel@email.com,Basic,65,2,65,2,9,1
+19,Sam Harris,sam@email.com,Pro,390,16,7,18,1,0
+20,Tina Robinson,tina@email.com,Enterprise,700,25,6,36,2,0
+21,Umar Clark,umar@email.com,Basic,55,1,80,1,11,1
+22,Vera Lewis,vera@email.com,Pro,410,17,6,12,0,0
+23,Will Walker,will@email.com,Basic,85,3,48,3,6,1
+24,Xena Young,xena@email.com,Enterprise,960,38,2,48,0,0
+25,Yusuf King,yusuf@email.com,Pro,280,10,18,9,3,0
