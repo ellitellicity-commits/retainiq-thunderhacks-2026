@@ -221,6 +221,9 @@ def score_customer():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/") 
+def home(): 
+	return "RetainIQ backend is running" 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000) 
