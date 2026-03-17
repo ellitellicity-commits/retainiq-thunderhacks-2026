@@ -31,31 +31,52 @@ RetainIQ is a customer retention intelligence platform built for **Digital Move 
 
 ---
 
+## 🏆 Achievement
+
+**Gold Sponsor Challenge Winner — ThunderHacks 2026**  
+Selected as the winning project for the **Digital Move IT & Telecom Gold Sponsor Challenge**.
+
+<br />
+
+---
+
+## 📸 Winning Moment
+
+<div align="center">
+  <img src="./assets/thunderhacks-win.jpg" alt="Ellison Naz and Rishav Bawa winning the Digital Move Gold Sponsor Challenge at ThunderHacks 2026" width="700" />
+  <br />
+  <sub>RetainIQ team after winning the Digital Move Gold Sponsor Challenge at ThunderHacks 2026.</sub>
+</div>
+
+<br />
+
+---
+
 ## The product
 
 <br />
 
-**Dashboard**
+**Dashboard**  
 Live churn risk scores across every account. Filterable by plan and risk level. Click any customer for an inline profile snapshot. Animated KPI cards and a colour-coded bar chart that updates as you filter.
 
 <br />
 
-**Customer Intelligence**
+**Customer Intelligence**  
 A full sortable, searchable table with mini sparkline trend charts, risk score bars, and plan badges. Click any row to expand a detail panel — six stats, a risk gauge, and a visual journey stage indicator — all inline, no page reload.
 
 <br />
 
-**Journey Map**
+**Journey Map**  
 Four stages rendered as a live pipeline — Onboarded, Active, At-Risk, Churned. Click any stage to see exactly who is there, their risk scores, and the average health of that cohort. Animated fill bars show the distribution at a glance.
 
 <br />
 
-**Lifecycle**
+**Lifecycle**  
 A carousel of all 25 customers. Select anyone and scroll through a three-act narrative of their engagement decline. A sticky profile card morphs smoothly between Active, Warning, and Critical states as you read — powered by Framer Motion.
 
 <br />
 
-**Alert Center**
+**Alert Center**  
 The accounts that need a call today. A Mac-style terminal panel drafts a unique, personalized retention email for each one on demand. New sender, new subject, new copy — every single time. Typewriter effect included.
 
 <br />
@@ -80,7 +101,7 @@ The ML model trains on spend, login frequency, days since last contact, support 
 | Backend | Python · Flask · Flask-CORS |
 | Intelligence | scikit-learn · Pandas · NumPy |
 | Typography | Space Mono · DM Sans |
-| Deployment | Vercel |
+| Deployment | Vercel (Frontend) · Render (Backend) |
 
 </div>
 
@@ -102,6 +123,7 @@ The ML model trains on spend, login frequency, days since last contact, support 
 ---
 
 ## Running locally
+
 ```bash
 # Backend
 cd hackathon
@@ -113,9 +135,6 @@ python3 app.py
 cd hackathon/frontend
 npm install && npm start
 # → http://localhost:3000
-```
-
-<br />
 
 ---
 
