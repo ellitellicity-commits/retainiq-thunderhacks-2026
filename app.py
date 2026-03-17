@@ -244,7 +244,10 @@ def score_customer():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/render-test")
+def render_test():
+    return jsonify({"message": "new backend file is live"})
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5001))
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
