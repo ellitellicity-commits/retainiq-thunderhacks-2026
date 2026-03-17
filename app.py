@@ -1,4 +1,43 @@
-import os
+@app.route("/api/customers")
+def get_customers():
+    df = get_dataframe()
+    return df.to_json(orient="records")
+
+
+@app.route("/api/alerts")
+def get_alerts():
+    df = get_dataframe()
+    high_risk = df[df["churn_risk_score"] > 70]
+    return jsonify({"count": len(high_risk)})
+
+
+@app.route("/api/stats")
+def get_stats():
+    df = get_dataframe()
+    return jsonify({
+        "total_customers": len(df),
+        "avg_risk": float(df["churn_risk_score"].mean())
+    })
+
+
+@app.route("/api/journey")
+def get_journey():
+    df = get_dataframe()
+    stages = df["stage"].value_counts().to_dict()
+    return jsonify(stages)
+
+
+@app.route("/api/email", methods=["POST"])
+def generate_email():
+    data = request.json
+    email = generate_template_email(
+        data.get("name", "Customer"),
+        data.get("plan", "Basic"),
+        data.get("monthly_spend", 0),
+        data.get("days_since_last_contact", 0),
+        data.get("churn_risk_score", 0)
+    )
+    return jsonify({"email": email})import os
 import json
 import random
 from flask import Flask, jsonify, request
