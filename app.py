@@ -4,13 +4,21 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from model import load_and_train, get_dataframe, score_new_customer, _assign_stage
 
-app = Flask(__name__)
+app = Flask(__name__) 
 CORS(app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_PATH = os.path.join(BASE_DIR, "customers.csv")
-load_and_train(CSV_PATH)
-print("✅ Model trained and data loaded.")
+
+model_loaded = False
+
+
+def ensure_model_loaded():
+    global model_loaded
+    if not model_loaded:
+        load_and_train(CSV_PATH)
+        model_loaded = True
+        print("✅ Model trained and data loaded.")
 
 
 def generate_template_email(name, plan, spend, days_no_contact, risk_score):
@@ -130,8 +138,15 @@ def ping():
     return jsonify({"status": "ok"})
 
 
+@app.route("/api/render-test")
+def render_test():
+    return jsonify({"message": "new backend file is live"})
+
+
 @app.route("/api/customers")
 def get_customers():
+    ensure_model_loaded()
+
     df = get_dataframe()
     sort_by = request.args.get("sort", "churn_risk_score")
     order = request.args.get("order", "desc")
@@ -150,6 +165,8 @@ def get_customers():
 
 @app.route("/api/customers/<int:customer_id>")
 def get_customer(customer_id):
+    ensure_model_loaded()
+
     df = get_dataframe()
     row = df[df["id"] == customer_id]
     if row.empty:
@@ -159,6 +176,8 @@ def get_customer(customer_id):
 
 @app.route("/api/stats")
 def get_stats():
+    ensure_model_loaded()
+
     df = get_dataframe()
     by_stage = df.groupby("journey_stage").size().to_dict()
     by_plan = (
@@ -182,6 +201,8 @@ def get_stats():
 
 @app.route("/api/alerts")
 def get_alerts():
+    ensure_model_loaded()
+
     df = get_dataframe()
     alerts = df[df["churn_risk_score"] > 70].sort_values("churn_risk_score", ascending=False)
     return jsonify({
@@ -192,6 +213,8 @@ def get_alerts():
 
 @app.route("/api/journey")
 def get_journey():
+    ensure_model_loaded()
+
     df = get_dataframe()
     stages = ["Onboarded", "Active", "At-Risk", "Churned"]
     result = []
@@ -209,6 +232,8 @@ def get_journey():
 
 @app.route("/api/email", methods=["POST"])
 def generate_email():
+    ensure_model_loaded()
+
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
@@ -230,6 +255,8 @@ def generate_email():
 
 @app.route("/api/score", methods=["POST"])
 def score_customer():
+    ensure_model_loaded()
+
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
@@ -244,10 +271,8 @@ def score_customer():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/render-test")
-def render_test():
-    return jsonify({"message": "new backend file is live"})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
