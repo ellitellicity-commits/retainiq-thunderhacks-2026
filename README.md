@@ -43,9 +43,9 @@ Selected as the winning project for the **Digital Move IT & Telecom Gold Sponsor
 ## 📸 Winning Moment
 
 <div align="center">
-  <img src="./assets/thunderhacks-win.jpg" alt="Ellison Naz and Rishav Bawa winning the Digital Move Gold Sponsor Challenge at ThunderHacks 2026" width="700" />
+  <img src="./assets/thunderhacks-win.jpg" width="700" />
   <br />
-  <sub>RetainIQ team after winning the Digital Move Gold Sponsor Challenge at ThunderHacks 2026.</sub>
+  <sub>Winning the Digital Move Gold Sponsor Challenge at ThunderHacks 2026</sub>
 </div>
 
 <br />
@@ -77,7 +77,7 @@ A carousel of all 25 customers. Select anyone and scroll through a three-act nar
 <br />
 
 **Alert Center**  
-The accounts that need a call today. A Mac-style terminal panel drafts a unique, personalized retention email for each one on demand. New sender, new subject, new copy — every single time. Typewriter effect included.
+The accounts that need a call today. A Mac-style terminal panel drafts personalized retention emails for high-risk accounts on demand, helping sales teams act quickly with tailored outreach.
 
 <br />
 
@@ -135,8 +135,7 @@ python3 app.py
 cd hackathon/frontend
 npm install && npm start
 # → http://localhost:3000
-
----
+```
 
 ## Team
 
