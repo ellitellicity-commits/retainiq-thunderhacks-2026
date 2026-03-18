@@ -157,7 +157,6 @@ export default function Alerts({ API }) {
   }, [API]);
 
   const generateEmail = (customer) => {
-    if (selected?.id === customer.id && email) return;
     setSelected(customer);
     setEmail(null);
     setLoading(true);
@@ -372,7 +371,7 @@ export default function Alerts({ API }) {
                 <motion.button
                   whileHover={{ scale: 1.04, boxShadow: "0 4px 20px rgba(16,185,129,0.3)" }}
                   whileTap={{ scale: 0.97 }}
-                  onClick={() => alert("Email copied! (implement clipboard in production)")}
+                  onClick={() => { const text = `Subject: ${email.subject}\n\n${email.body}`; navigator.clipboard.writeText(text); }}
                   style={{ flex: 1, background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)", borderRadius: 9, padding: "10px 16px", color: "#10b981", fontFamily: "Space Mono", fontSize: 11, fontWeight: 700, cursor: "pointer", letterSpacing: 1 }}
                 >
                   ✓ COPY EMAIL

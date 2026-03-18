@@ -6,7 +6,7 @@ import Journey from "./pages/Journey";
 import Lifecycle from "./pages/Lifecycle";
 import "./App.css";
 
-const API = "https://retainiq-thunderhacks-2026.onrender.com";
+const API = "http://localhost:5001";
 
 export default function App() {
   const [page, setPage] = useState("dashboard");
