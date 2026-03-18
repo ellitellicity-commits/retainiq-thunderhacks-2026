@@ -150,3 +150,21 @@ npm install && npm start
 <sub>Built with focus and very little sleep.</sub>
 
 </div>
+
+---
+
+## ⚙️ Deployment Notes
+
+**Frontend:** Vercel  
+**Backend:** Render  
+
+This project is deployed using Vercel (frontend) and Render (backend).  
+The backend runs on a free-tier service and may enter a sleep state after periods of inactivity.  
+
+⏳ The first request may take up to **60–90 seconds** to respond.  
+⚡ Subsequent requests will be significantly faster once the service is active.  
+
+**Tip:** For the best experience, pre-warm the backend by visiting:  
+👉 https://retainiq-thunderhacks-2026.onrender.com/api/customers  
+
+---
