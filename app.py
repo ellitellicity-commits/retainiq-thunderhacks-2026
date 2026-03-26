@@ -4,11 +4,11 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from model import load_and_train, get_dataframe, score_new_customer, _assign_stage
 
-app = Flask(__name__) 
-CORS(app)
+app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CSV_PATH = os.path.join(BASE_DIR, "customers.csv")
+CSV_PATH = os.path.join(BASE_DIR, "clients.csv")
 
 model_loaded = False
 
@@ -21,8 +21,92 @@ def ensure_model_loaded():
         print("✅ Model trained and data loaded.")
 
 
-def generate_template_email(name, plan, spend, days_no_contact, risk_score):
-    first_name = name.split()[0] if name else "Customer"
+def generate_template_email(name, plan, spend, days_no_contact, risk_score, days_until_expiry=None, software=None, contract_expiry=None, account_manager=None):
+    from groq import Groq
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    first_name = name.split()[0] if name else "Client"
+    sender = account_manager or random.choice(["Sarah Mitchell", "James Okafor", "Priya Sharma", "Marcus Chen"])
+
+    try:
+        client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
+        urgency = "CRITICAL - contract has expired" if days_until_expiry and days_until_expiry < 0 else f"expiring in {days_until_expiry} days" if days_until_expiry and days_until_expiry <= 30 else f"expiring in {days_until_expiry} days" if days_until_expiry else "approaching renewal"
+
+        prompt = f"""You are {sender}, an account manager at Digital Move IT & Telecom.
+Write a short, professional, personalized renewal email to {name}.
+
+Client details:
+- Company: {name}
+- Software: {software or plan}
+- Contract expiry: {contract_expiry or "soon"} ({urgency})
+- Last contact: {days_no_contact} days ago
+- Contract value: ${spend}
+
+Rules:
+- 3 short paragraphs max
+- Mention the specific software and expiry date
+- Be warm and professional, not robotic
+- End with a clear call to action to schedule a call
+- Sign off as {sender}, Digital Move IT & Telecom
+- Higher urgency = more urgent tone
+
+Respond in this exact format and nothing else:
+SUBJECT: <subject line here, one line only>
+BODY:
+<email body here, do NOT repeat the subject line>"""
+
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=500,
+        )
+
+        text = response.choices[0].message.content.strip()
+        subject = ""
+        body = ""
+        if "BODY:" in text:
+            parts = text.split("BODY:", 1)
+            subject_part = parts[0]
+            body = parts[1].strip()
+            for line in subject_part.split("\n"):
+                if line.strip().upper().startswith("SUBJECT:"):
+                    subject = line.strip()[8:].strip()
+                    break
+        else:
+            lines = text.split("\n")
+            subject = lines[0].replace("SUBJECT:", "").strip()
+            body = "\n".join(lines[1:]).strip()
+        body_lines = body.split("\n")
+
+        body = "\n".join(body_lines).strip()
+        # Remove subject line if it appears in body
+        if body.startswith("SUBJECT:"):
+            body = "\n".join(body.split("\n")[1:]).strip()
+        # Remove subject line if it appears in body
+        if body.startswith("SUBJECT:"):
+            body = "\n".join(body.split("\n")[1:]).strip()
+        if not subject:
+            subject = f"Contract Renewal — {software or 'Your License'} expiring soon"
+        if not body:
+            body = text
+
+        return subject, body
+
+    except Exception as e:
+        print(f"Groq error: {e}")
+        # fallback to template
+        first_name = name.split()[0] if name else "Client"
+        subject = f"Your {software or 'software'} contract renewal — action needed"
+        body = (
+            f"Hi {first_name},\n\n"
+            f"I wanted to reach out regarding {name}'s {software or 'software license'} which is {urgency if days_until_expiry else 'coming up for renewal'}.\n\n"
+            f"I'd love to schedule a quick call this week to discuss renewal options and ensure there's no interruption to your service.\n\n"
+            f"Would you have 15 minutes this week?\n\n"
+            f"Best,\n{sender}\nDigital Move IT & Telecom"
+        )
+        return subject, body
 
     senders = ["Sarah", "James", "Priya", "Marcus", "Elena", "David"]
     sender = random.choice(senders)
@@ -180,13 +264,19 @@ def get_stats():
 
     df = get_dataframe()
     by_stage = df.groupby("journey_stage").size().to_dict()
-    by_plan = (
-        df.groupby("plan")
+
+
+    by_vendor = (
+        df.groupby("vendor")
         .agg(count=("id", "count"), avg_score=("churn_risk_score", "mean"))
         .round(1)
         .reset_index()
         .to_dict(orient="records")
     )
+
+    expiring_30 = int((df["days_until_expiry"] <= 30).sum())
+    expiring_90 = int((df["days_until_expiry"] <= 90).sum())
+    total_value_at_risk = int(df[df["churn_risk_score"] > 50]["contract_value"].sum())
 
     return jsonify({
         "total_customers": int(len(df)),
@@ -195,7 +285,10 @@ def get_stats():
         "medium_risk_count": int(((df["churn_risk_score"] >= 40) & (df["churn_risk_score"] <= 70)).sum()),
         "low_risk_count": int((df["churn_risk_score"] < 40).sum()),
         "by_stage": by_stage,
-        "by_plan": by_plan,
+        "by_plan": by_vendor,
+        "expiring_30": expiring_30,
+        "expiring_90": expiring_90,
+        "total_value_at_risk": total_value_at_risk,
     })
 
 
@@ -216,7 +309,7 @@ def get_journey():
     ensure_model_loaded()
 
     df = get_dataframe()
-    stages = ["Onboarded", "Active", "At-Risk", "Churned"]
+    stages = ["Active", "At-Risk", "Critical", "Expired"]
     result = []
 
     for stage in stages:
@@ -224,7 +317,7 @@ def get_journey():
         result.append({
             "stage": stage,
             "count": int(len(stage_df)),
-            "customers": stage_df[["id", "name", "plan", "churn_risk_score"]].to_dict(orient="records"),
+            "customers": stage_df[["id", "client_name", "vendor", "software", "churn_risk_score"]].to_dict(orient="records"),
         })
 
     return jsonify(result)
@@ -272,7 +365,48 @@ def score_customer():
         return jsonify({"error": str(e)}), 500
 
 
+
+
+@app.route("/api/upload", methods=["POST"])
+def upload_csv():
+    if "file" not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    file = request.files["file"]
+    if not file.filename.endswith(".csv"):
+        return jsonify({"error": "File must be a CSV"}), 400
+    try:
+        import pandas as pd
+        import io
+        contents = file.read()
+        df = pd.read_csv(io.BytesIO(contents))
+        required = ["client_name", "software", "vendor", "contract_start", 
+                    "contract_expiry", "contract_value", "last_contact", "account_manager"]
+        missing = [col for col in required if col not in df.columns]
+        if missing:
+            return jsonify({"error": f"Missing columns: {', '.join(missing)}"}), 400
+        df.to_csv(CSV_PATH, index=False)
+        global model_loaded
+        model_loaded = False
+        ensure_model_loaded()
+        return jsonify({"success": True, "message": "Data uploaded and analyzed!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+@app.route("/api/reset", methods=["POST"])
+def reset_data():
+    global model_loaded
+    original = os.path.join(BASE_DIR, "customers_backup.csv")
+    if os.path.exists(original):
+        import shutil
+        shutil.copy(original, CSV_PATH)
+    model_loaded = False
+    ensure_model_loaded()
+    return jsonify({"success": True})
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
 

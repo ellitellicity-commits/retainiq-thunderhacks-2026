@@ -1,48 +1,108 @@
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
+from datetime import datetime
 import numpy as np
 
-FEATURES = ["spend", "logins", "days_since_contact", "support_tickets", "contract_months"]
-
-_model = None
-_scaler = None
 _df = None
 
-def load_and_train(csv_path="customers.csv"):
-    global _model, _scaler, _df
+def load_and_train(csv_path="clients.csv"):
+    global _df
     df = pd.read_csv(csv_path)
-    df[FEATURES] = df[FEATURES].fillna(df[FEATURES].median())
-    df["churned"] = df["churned"].fillna(0).astype(int)
-    X = df[FEATURES]
-    y = df["churned"]
-    _scaler = StandardScaler()
-    X_scaled = _scaler.fit_transform(X)
-    _model = LogisticRegression(max_iter=1000, random_state=42)
-    _model.fit(X_scaled, y)
-    churn_probs = _model.predict_proba(X_scaled)[:, 1]
-    df["churn_risk_score"] = (churn_probs * 100).round(1)
-    df["journey_stage"] = df["churn_risk_score"].apply(_assign_stage)
+    
+    today = datetime.today()
+    
+    # Calculate days until contract expiry
+    df["contract_expiry"] = pd.to_datetime(df["contract_expiry"])
+    df["contract_start"] = pd.to_datetime(df["contract_start"])
+    df["last_contact"] = pd.to_datetime(df["last_contact"])
+    
+    df["days_until_expiry"] = (df["contract_expiry"] - today).dt.days
+    df["days_since_contact"] = (today - df["last_contact"]).dt.days
+    
+    # Risk score based on expiry and contact
+    def calculate_risk(row):
+        score = 0
+        
+        # Contract expiry risk (most important)
+        if row["days_until_expiry"] < 0:
+            score += 80  # already expired
+        elif row["days_until_expiry"] <= 30:
+            score += 70  # critical
+        elif row["days_until_expiry"] <= 60:
+            score += 50  # high
+        elif row["days_until_expiry"] <= 90:
+            score += 30  # medium
+        else:
+            score += 5   # low
+        
+        # Last contact risk
+        if row["days_since_contact"] > 90:
+            score += 20
+        elif row["days_since_contact"] > 60:
+            score += 10
+        elif row["days_since_contact"] > 30:
+            score += 5
+        
+        return min(100, round(score, 1))
+    
+    df["churn_risk_score"] = df.apply(calculate_risk, axis=1)
+    
+    # Journey stage based on days until expiry
+    def assign_stage(row):
+        if row["days_until_expiry"] < 0:
+            return "Expired"
+        elif row["days_until_expiry"] <= 30:
+            return "Critical"
+        elif row["days_until_expiry"] <= 90:
+            return "At-Risk"
+        else:
+            return "Active"
+    
+    df["journey_stage"] = df.apply(assign_stage, axis=1)
+    
+    # Format dates back to strings for JSON
+    df["contract_expiry"] = df["contract_expiry"].dt.strftime("%Y-%m-%d")
+    df["contract_start"] = df["contract_start"].dt.strftime("%Y-%m-%d")
+    df["last_contact"] = df["last_contact"].dt.strftime("%Y-%m-%d")
+    
     _df = df
     return df
-
-def _assign_stage(score):
-    if score < 20:
-        return "Onboarded"
-    elif score < 45:
-        return "Active"
-    elif score < 70:
-        return "At-Risk"
-    else:
-        return "Churned"
 
 def get_dataframe():
     return _df
 
 def score_new_customer(features: dict):
-    if _model is None or _scaler is None:
-        raise RuntimeError("Model not trained yet.")
-    row = pd.DataFrame([{f: features.get(f, 0) for f in FEATURES}])
-    row_scaled = _scaler.transform(row)
-    prob = _model.predict_proba(row_scaled)[0][1]
-    return round(prob * 100, 1)
+    today = datetime.today()
+    expiry = datetime.strptime(features.get("contract_expiry", str(today)), "%Y-%m-%d")
+    days_until_expiry = (expiry - today).days
+    days_since_contact = features.get("days_since_contact", 0)
+    
+    score = 0
+    if days_until_expiry < 0:
+        score += 80
+    elif days_until_expiry <= 30:
+        score += 70
+    elif days_until_expiry <= 60:
+        score += 50
+    elif days_until_expiry <= 90:
+        score += 30
+    else:
+        score += 5
+    
+    if days_since_contact > 90:
+        score += 20
+    elif days_since_contact > 60:
+        score += 10
+    elif days_since_contact > 30:
+        score += 5
+    
+    return min(100, round(score, 1))
+
+def _assign_stage(score):
+    if score >= 80:
+        return "Expired"
+    elif score >= 50:
+        return "Critical"
+    elif score >= 30:
+        return "At-Risk"
+    else:
+        return "Active"

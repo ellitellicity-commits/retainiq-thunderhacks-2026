@@ -1,0 +1,51 @@
+id,client_name,software,vendor,contract_start,contract_expiry,contract_value,last_contact,account_manager
+1,RBC Bank,IBM Security QRadar,IBM,2024-09-19,2026-09-19,150000,2025-12-17,David Thompson
+2,Shell Canada,Commvault Backup,Commvault,2024-08-27,2026-08-27,150000,2026-03-05,Elena Vasquez
+3,Rogers Communications,Commvault Disaster Recovery,Commvault,2025-06-07,2026-06-07,30000,2026-03-20,David Thompson
+4,Bell Canada,HP Aruba Network,HP,2023-04-03,2024-04-02,30000,2026-03-09,Elena Vasquez
+5,TD Bank,Fortinet FortiAnalyzer,Fortinet,2023-08-10,2025-08-09,15000,2026-02-25,Marcus Chen
+6,Scotiabank,Fortinet FortiAnalyzer,Fortinet,2023-12-30,2025-12-29,50000,2026-01-16,Priya Sharma
+7,CIBC,Kaspersky Endpoint Security,Kaspersky,2023-12-30,2024-12-29,10000,2025-12-14,Elena Vasquez
+8,BMO Financial,Fortinet FortiAnalyzer,Fortinet,2025-01-17,2027-01-17,100000,2025-12-23,David Thompson
+9,Enbridge Inc,HP Aruba Network,HP,2025-02-09,2027-02-09,20000,2026-01-01,Priya Sharma
+10,Suncor Energy,Cisco Webex,Cisco,2023-06-11,2025-06-10,15000,2025-12-22,Marcus Chen
+11,Canadian Tire,Fortinet FortiGate,Fortinet,2023-07-28,2025-07-27,150000,2025-11-22,Priya Sharma
+12,Loblaw Companies,Commvault Disaster Recovery,Commvault,2025-01-22,2026-01-22,30000,2026-01-14,James Okafor
+13,Air Canada,Fortinet FortiAnalyzer,Fortinet,2025-05-18,2026-05-18,100000,2025-12-26,Marcus Chen
+14,WestJet,Fortinet FortiGate,Fortinet,2025-03-14,2026-03-14,100000,2025-12-23,Elena Vasquez
+15,Manulife,Oracle Database License,Oracle,2024-11-02,2025-11-02,50000,2026-01-15,James Okafor
+16,Sun Life Financial,IBM Maximo,IBM,2025-09-02,2027-09-02,75000,2026-01-20,Priya Sharma
+17,Telus Corporation,HP Aruba Network,HP,2024-05-18,2025-05-18,150000,2026-03-12,Marcus Chen
+18,Shaw Communications,Oracle Cloud ERP,Oracle,2025-04-09,2027-04-09,100000,2025-12-09,Priya Sharma
+19,Hydro One,Oracle Database License,Oracle,2024-11-20,2025-11-20,30000,2025-12-11,Elena Vasquez
+20,Ontario Power Generation,Fortinet FortiGate,Fortinet,2023-06-12,2024-06-11,30000,2025-11-26,Priya Sharma
+21,Toronto Hydro,Commvault Disaster Recovery,Commvault,2025-05-18,2026-05-18,25000,2025-12-27,James Okafor
+22,Metrolinx,Dell PowerEdge Server,Dell,2023-06-30,2025-06-29,15000,2026-01-25,Marcus Chen
+23,City of Toronto,Lenovo Data Center,Lenovo,2024-04-21,2026-04-21,150000,2025-12-06,Elena Vasquez
+24,Government of Ontario,Dell EMC Storage,Dell,2024-11-13,2026-11-13,5000,2026-03-15,David Thompson
+25,Canada Post,HP ProLiant Server,HP,2025-02-28,2027-02-28,20000,2026-01-29,Sarah Mitchell
+26,Via Rail,Fortinet FortiAnalyzer,Fortinet,2023-12-16,2024-12-15,50000,2025-11-24,James Okafor
+27,Maple Leaf Foods,Kaspersky Endpoint Security,Kaspersky,2025-01-29,2026-01-29,10000,2025-12-16,Priya Sharma
+28,George Weston,IBM Security QRadar,IBM,2025-04-08,2026-04-08,100000,2026-01-08,Priya Sharma
+29,Empire Company,Kaspersky Endpoint Security,Kaspersky,2024-02-27,2026-02-26,150000,2026-01-29,Elena Vasquez
+30,Saputo Inc,HP Aruba Network,HP,2024-02-25,2025-02-24,15000,2026-01-31,Elena Vasquez
+31,Bombardier,Cisco Firewall License,Cisco,2025-05-07,2026-05-07,100000,2026-02-06,David Thompson
+32,CAE Inc,Oracle Cloud ERP,Oracle,2024-06-24,2025-06-24,15000,2025-12-07,Marcus Chen
+33,SNC-Lavalin,Adobe Creative Cloud,Adobe,2023-07-16,2025-07-15,30000,2026-02-22,Sarah Mitchell
+34,WSP Global,Cisco Firewall License,Cisco,2023-11-02,2024-11-01,30000,2026-01-29,Marcus Chen
+35,Stantec,Fortinet FortiGate,Fortinet,2025-09-07,2026-09-07,10000,2025-11-22,Elena Vasquez
+36,AECOM Canada,HP Aruba Network,HP,2024-01-12,2025-01-11,75000,2025-12-03,Elena Vasquez
+37,PCL Construction,Cisco Webex,Cisco,2025-04-02,2026-04-02,25000,2026-01-08,Priya Sharma
+38,EllisDon,Commvault Disaster Recovery,Commvault,2024-02-22,2025-02-21,5000,2026-01-18,Priya Sharma
+39,Deloitte Canada,Kaspersky EDR,Kaspersky,2025-07-19,2027-07-19,5000,2025-11-23,David Thompson
+40,KPMG Canada,IBM Security QRadar,IBM,2024-07-15,2025-07-15,10000,2025-12-07,Sarah Mitchell
+41,PwC Canada,Oracle Cloud ERP,Oracle,2025-04-05,2026-04-05,15000,2026-03-16,James Okafor
+42,EY Canada,IBM Security QRadar,IBM,2024-11-06,2025-11-06,50000,2026-01-27,Priya Sharma
+43,MNP,Commvault Disaster Recovery,Commvault,2024-05-13,2026-05-13,30000,2026-01-06,James Okafor
+44,Intact Financial,Cisco Webex,Cisco,2025-03-08,2026-03-08,10000,2026-01-18,Sarah Mitchell
+45,Fairfax Financial,Adobe Acrobat Enterprise,Adobe,2024-10-21,2026-10-21,100000,2026-01-07,David Thompson
+46,Definity Financial,Oracle Database License,Oracle,2023-04-08,2025-04-07,30000,2026-02-03,Elena Vasquez
+47,Aviva Canada,Fortinet FortiGate,Fortinet,2023-06-08,2025-06-07,50000,2026-02-13,James Okafor
+48,RSA Canada,Lenovo ThinkSystem,Lenovo,2025-05-22,2027-05-22,10000,2026-03-20,Elena Vasquez
+49,Graham Construction,HP Aruba Network,HP,2024-03-14,2025-03-14,30000,2026-03-15,David Thompson
+50,Brookfield Asset Management,Kaspersky Endpoint Security,Kaspersky,2023-10-19,2025-10-18,100000,2026-01-18,James Okafor

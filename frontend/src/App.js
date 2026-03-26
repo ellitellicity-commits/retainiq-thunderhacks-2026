@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Upload from "./pages/Upload";
 import Customers from "./pages/Customers";
 import Alerts from "./pages/Alerts";
 import Journey from "./pages/Journey";
@@ -10,6 +13,8 @@ const API = "https://retainiq-thunderhacks-2026.onrender.com"
 
 export default function App() {
   const [page, setPage] = useState("dashboard");
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [uploaded, setUploaded] = useState(false);
   const [alertCount, setAlertCount] = useState(0);
   const [time, setTime] = useState(new Date());
 
@@ -26,6 +31,9 @@ export default function App() {
     { id: "alerts",    label: "Alerts",    icon: "⬡", badge: alertCount },
     { id: "lifecycle", label: "Lifecycle", icon: "◉" },
   ];
+
+  if (!loggedIn) return <Login onLogin={() => setLoggedIn(true)} />;
+  if (!uploaded) return <Upload API={API} onUpload={() => setUploaded(true)} onSkip={() => setUploaded(true)} />;
 
   return (
     <div className="app">
@@ -44,6 +52,14 @@ export default function App() {
             <span style={{ fontFamily:"'Space Mono', monospace", fontSize:"11px", fontWeight:"700", letterSpacing:"2px", color:"#10b981" }}>LIVE</span>
           </div>
           <div className="header-time">{time.toLocaleTimeString()}</div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setUploaded(false)}
+            style={{ background: "rgba(0,229,255,0.08)", border: "1px solid rgba(0,229,255,0.2)", borderRadius: "999px", padding: "5px 14px", color: "#00e5ff", fontFamily: "'Space Mono', monospace", fontSize: "11px", fontWeight: "700", letterSpacing: "1px", cursor: "pointer" }}
+          >
+            ↑ CHANGE DATA
+          </motion.button>
         </div>
       </header>
 
