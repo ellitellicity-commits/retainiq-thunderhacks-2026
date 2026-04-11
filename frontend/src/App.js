@@ -33,7 +33,7 @@ export default function App() {
   ];
 
   if (!loggedIn) return <Login onLogin={() => setLoggedIn(true)} />;
-  if (!uploaded) return <Upload API={API} onUpload={() => setUploaded(true)} onSkip={() => setUploaded(true)} />;
+  if (!uploaded) return <Upload API={API} onUpload={() => setUploaded(true)} onSkip={() => setUploaded(true)} onCancel={() => setUploaded(true)} />;
 
   return (
     <div className="app">

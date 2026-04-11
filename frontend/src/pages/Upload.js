@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Upload({ onUpload, onSkip, API }) {
+export default function Upload({ onUpload, onSkip, API, onCancel }) {
   const [dragging, setDragging] = useState(false);
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -61,6 +61,7 @@ export default function Upload({ onUpload, onSkip, API }) {
           width: "100%",
           maxWidth: 480,
           boxShadow: "0 0 60px rgba(0,229,255,0.08)",
+          position: "relative",
         }}
       >
         {/* Header */}
@@ -127,6 +128,30 @@ export default function Upload({ onUpload, onSkip, API }) {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Cancel button - only show if onCancel is provided */}
+        {onCancel && (
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onCancel}
+            style={{
+              position: "absolute",
+              top: 20,
+              right: 20,
+              background: "transparent",
+              border: "1px solid rgba(0,229,255,0.2)",
+              borderRadius: 8,
+              padding: "6px 12px",
+              color: "#3d5070",
+              fontFamily: "Space Mono",
+              fontSize: 11,
+              cursor: "pointer",
+            }}
+          >
+            CANCEL ✕
+          </motion.button>
+        )}
 
         {/* Upload button */}
         <motion.button

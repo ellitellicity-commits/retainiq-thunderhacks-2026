@@ -151,14 +151,14 @@ export default function Alerts({ API }) {
         </div>
       </motion.div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, alignItems: "start" }}>
         {/* LEFT — alert list */}
         <div>
           <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12, display: "flex", justifyContent: "space-between" }}>
             <span>High-Risk Clients</span>
             <span style={{ color: "#ef4444" }}>{alerts.length} ALERTS</span>
           </div>
-          <div style={{ maxHeight: "calc(100vh - 380px)", overflowY: "auto", paddingRight: 4 }}>
+          <div style={{ maxHeight: "calc(100vh - 320px)", overflowY: "auto", paddingRight: 4 }}>
             {alerts.map((c, i) => (
               <AlertCard key={c.id} customer={c} isSelected={selected?.id === c.id} onClick={() => generateEmail(c)} index={i} />
             ))}
@@ -166,7 +166,7 @@ export default function Alerts({ API }) {
         </div>
 
         {/* RIGHT — terminal email panel */}
-        <div>
+        <div style={{ position: "sticky", top: 80 }}>
           <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
             Renewal Email Generator
           </div>

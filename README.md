@@ -122,6 +122,14 @@ The ML model trains on spend, login frequency, days since last contact, support 
 
 ---
 
+
+
+## Demo Credentials
+> ⚠️ For demonstration purposes only
+
+Username: `digitalmove`  
+Password: `retainiq2026`
+
 ## Running locally
 
 ```bash
