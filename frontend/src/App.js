@@ -9,7 +9,7 @@ import Journey from "./pages/Journey";
 import Lifecycle from "./pages/Lifecycle";
 import "./App.css";
 
-const API = "https://retainiq-thunderhacks-2026.onrender.com"
+const API = "http://localhost:5001"
 
 export default function App() {
   const [page, setPage] = useState("dashboard");
@@ -19,7 +19,7 @@ export default function App() {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    fetch(`${API}/api/alerts`).then(r => r.json()).then(d => setAlertCount(d.count));
+    fetch(`${API}/api/db/stats`).then(r => r.json()).then(d => setAlertCount(d.high_risk_count));
     const t = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(t);
   }, []);

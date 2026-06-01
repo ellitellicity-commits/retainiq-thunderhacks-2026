@@ -119,9 +119,15 @@ export default function Journey({ API }) {
   const [totalClients, setTotalClients] = useState(0);
 
   useEffect(() => {
-    fetch(`${API}/api/journey`).then(r => r.json()).then(data => {
-      setStages(data);
-      setTotalClients(data.reduce((sum, s) => sum + s.count, 0));
+    fetch(`${API}/api/db/clients`).then(r => r.json()).then(data => {
+      const stageNames = ["Active", "At-Risk", "Critical", "Expired"];
+      const grouped = stageNames.map(s => ({
+        stage: s,
+        count: data.filter(c => c.journey_stage === s).length,
+        customers: data.filter(c => c.journey_stage === s)
+      }));
+      setStages(grouped);
+      setTotalClients(data.length);
     });
   }, [API]);
 

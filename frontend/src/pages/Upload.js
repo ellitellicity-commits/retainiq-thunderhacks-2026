@@ -23,7 +23,7 @@ export default function Upload({ onUpload, onSkip, API, onCancel }) {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      const res = await fetch(`${API}/api/upload`, {
+      const res = await fetch(`${API}/api/db/import`, {
         method: "POST",
         body: formData,
       });
@@ -71,7 +71,7 @@ export default function Upload({ onUpload, onSkip, API, onCancel }) {
             Upload Client Data
           </div>
           <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", letterSpacing: 1.5, marginTop: 8 }}>
-            CSV must include: name, plan, spend, logins, days_since_contact, support_tickets, contract_months
+            CSV must include: client_name, vendor, software, contract_start, contract_expiry, contract_value, last_contact, account_manager
           </div>
         </div>
 

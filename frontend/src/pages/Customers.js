@@ -168,7 +168,7 @@ export default function Customers({ API }) {
   const [sortDir, setSortDir] = useState("desc");
 
   useEffect(() => {
-    fetch(`${API}/api/customers`).then(r => r.json()).then(setCustomers);
+    fetch(`${API}/api/db/clients`).then(r => r.json()).then(setCustomers);
   }, [API]);
 
   const vendors = ["all", ...new Set(customers.map(c => c.vendor))];

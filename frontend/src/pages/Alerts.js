@@ -113,9 +113,10 @@ export default function Alerts({ API }) {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/api/alerts`).then(r => r.json()).then(d => {
-      setAlerts(d.customers);
-      setStats({ count: d.count });
+    fetch(`${API}/api/db/clients`).then(r => r.json()).then(d => {
+      const alertClients = d.filter(c => c.churn_risk_score >= 70);
+      setAlerts(alertClients);
+      setStats({ count: alertClients.length });
     });
   }, [API]);
 

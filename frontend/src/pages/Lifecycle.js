@@ -130,7 +130,7 @@ export default function Lifecycle({ API }) {
   const pillsRef = useRef(null);
 
   useEffect(() => {
-    fetch(`${API}/api/customers?sort=churn_risk_score&order=desc`).then(r => r.json()).then(setCustomers);
+    fetch(`${API}/api/db/clients`).then(r => r.json()).then(setCustomers);
   }, [API]);
 
   useEffect(() => { setActiveStep(0); }, [currentIndex]);

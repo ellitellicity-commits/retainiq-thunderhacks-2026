@@ -45,8 +45,8 @@ export default function Dashboard({ API }) {
   const [filter, setFilter] = useState("all");
 
   useEffect(() => {
-    fetch(`${API}/api/stats`).then(r => r.json()).then(setStats);
-    fetch(`${API}/api/customers`).then(r => r.json()).then(setCustomers);
+    fetch(`${API}/api/db/stats`).then(r => r.json()).then(setStats);
+    fetch(`${API}/api/db/clients`).then(r => r.json()).then(setCustomers);
   }, [API]);
 
   if (!stats) return (
