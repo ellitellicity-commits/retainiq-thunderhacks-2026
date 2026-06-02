@@ -118,7 +118,7 @@ export default function Dashboard({ API }) {
         </div>
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={filtered} barCategoryGap="28%" onClick={(d) => d?.activePayload && setSelected(d.activePayload[0].payload)}>
-            <XAxis dataKey="client_name" tick={{ fill: "#3d5070", fontSize: 9, fontFamily: "Space Mono" }} interval={0} angle={-40} textAnchor="end" height={52} axisLine={false} tickLine={false} />
+            <XAxis dataKey="company_name" tick={{ fill: "#3d5070", fontSize: 9, fontFamily: "Space Mono" }} interval={0} angle={-40} textAnchor="end" height={52} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: "#3d5070", fontSize: 10, fontFamily: "Space Mono" }} domain={[0, 100]} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,229,255,0.04)" }} />
             <Bar dataKey="churn_risk_score" radius={[4, 4, 0, 0]}>

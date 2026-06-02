@@ -36,7 +36,7 @@ function CustomerDetail({ customer, onClose }) {
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
           <div>
-            <div style={{ fontFamily: "Space Mono", fontSize: 16, fontWeight: 700, color: "#e8f0fe" }}>{customer.client_name}</div>
+            <div style={{ fontFamily: "Space Mono", fontSize: 16, fontWeight: 700, color: "#e8f0fe" }}>{customer.company_name}</div>
             <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", marginTop: 4 }}>
               {customer.vendor} · {customer.software}
             </div>
@@ -76,7 +76,7 @@ function CustomerDetail({ customer, onClose }) {
 function CustomerRow({ customer, index, onClick, isSelected }) {
   const [hovered, setHovered] = useState(false);
   const riskColor = getRiskColor(customer.churn_risk_score);
-  const initials = customer.client_name?.split(" ").map(n => n[0]).join("").slice(0, 2) || "?";
+  const initials = customer.company_name?.split(" ").map(n => n[0]).join("").slice(0, 2) || "?";
   const daysUntilExpiry = customer.days_until_expiry;
   const expiryColor = daysUntilExpiry < 0 ? "#ef4444" : daysUntilExpiry <= 30 ? "#ef4444" : daysUntilExpiry <= 90 ? "#f59e0b" : "#10b981";
 
@@ -97,7 +97,7 @@ function CustomerRow({ customer, index, onClick, isSelected }) {
             {initials}
           </div>
           <div>
-            <div style={{ fontSize: 13.5, fontWeight: 600, color: "#e8f0fe" }}>{customer.client_name}</div>
+            <div style={{ fontSize: 13.5, fontWeight: 600, color: "#e8f0fe" }}>{customer.company_name}</div>
             <div style={{ fontFamily: "Space Mono", fontSize: 9, color: "#3d5070" }}>{customer.account_manager}</div>
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function Customers({ API }) {
 
   const filtered = customers
     .filter(c => {
-      const matchSearch = !search || c.client_name?.toLowerCase().includes(search.toLowerCase()) || c.vendor?.toLowerCase().includes(search.toLowerCase()) || c.software?.toLowerCase().includes(search.toLowerCase());
+      const matchSearch = !search || c.company_name?.toLowerCase().includes(search.toLowerCase()) || c.vendor?.toLowerCase().includes(search.toLowerCase()) || c.software?.toLowerCase().includes(search.toLowerCase());
       const matchVendor = vendorFilter === "all" || c.vendor === vendorFilter;
       const matchRisk = riskFilter === "all" || (riskFilter === "high" && c.churn_risk_score > 70) || (riskFilter === "medium" && c.churn_risk_score >= 40 && c.churn_risk_score <= 70) || (riskFilter === "low" && c.churn_risk_score < 40);
       return matchSearch && matchVendor && matchRisk;

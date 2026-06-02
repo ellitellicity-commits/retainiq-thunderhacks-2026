@@ -154,21 +154,41 @@ def import_file(filepath):
                 data.get("contact_phone")
             ))
         
-        # Insert contract if we have expiry date
+        # Insert or update contract
         if data.get("expiry_date") or data.get("software"):
-            c.execute("""
-                INSERT INTO contracts (client_id, software, vendor, start_date, expiry_date, value, assigned_to, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                client_id,
-                data.get("software"),
-                data.get("vendor"),
-                data.get("start_date"),
-                data.get("expiry_date"),
-                data.get("contract_value"),
-                data.get("assigned_to"),
-                data.get("status", "active")
-            ))
+            c.execute("SELECT id FROM contracts WHERE client_id = ? AND software = ?", 
+                     (client_id, data.get("software")))
+            existing_contract = c.fetchone()
+            
+            if existing_contract:
+                c.execute("""
+                    UPDATE contracts SET vendor=?, start_date=?, expiry_date=?, 
+                    value=?, assigned_to=?, status=?, last_contact=? WHERE id=?
+                """, (
+                    data.get("vendor"),
+                    data.get("start_date"),
+                    data.get("expiry_date"),
+                    data.get("contract_value"),
+                    data.get("assigned_to"),
+                    data.get("status", "active"),
+                    data.get("last_contact"),
+                    existing_contract[0]
+                ))
+            else:
+                c.execute("""
+                    INSERT INTO contracts (client_id, software, vendor, start_date, expiry_date, value, assigned_to, status, last_contact)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    client_id,
+                    data.get("software"),
+                    data.get("vendor"),
+                    data.get("start_date"),
+                    data.get("expiry_date"),
+                    data.get("contract_value"),
+                    data.get("assigned_to"),
+                    data.get("status", "active"),
+                    data.get("last_contact")
+                ))
         
         # Store extra fields
         for field_name, field_value in extra.items():

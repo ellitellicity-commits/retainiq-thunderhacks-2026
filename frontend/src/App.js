@@ -6,7 +6,6 @@ import Upload from "./pages/Upload";
 import Customers from "./pages/Customers";
 import Alerts from "./pages/Alerts";
 import Journey from "./pages/Journey";
-import Lifecycle from "./pages/Lifecycle";
 import "./App.css";
 
 const API = "http://localhost:5001"
@@ -14,7 +13,7 @@ const API = "http://localhost:5001"
 export default function App() {
   const [page, setPage] = useState("dashboard");
   const [loggedIn, setLoggedIn] = useState(false);
-  const [uploaded, setUploaded] = useState(false);
+  const [uploaded, setUploaded] = useState(true);
   const [alertCount, setAlertCount] = useState(0);
   const [time, setTime] = useState(new Date());
 
@@ -29,10 +28,8 @@ export default function App() {
     { id: "customers", label: "Customers", icon: "◈" },
     { id: "journey",   label: "Journey",   icon: "◎" },
     { id: "alerts",    label: "Alerts",    icon: "⬡", badge: alertCount },
-    { id: "lifecycle", label: "Lifecycle", icon: "◉" },
   ];
 
-  if (!loggedIn) return <Login onLogin={() => setLoggedIn(true)} />;
   if (!uploaded) return <Upload API={API} onUpload={() => setUploaded(true)} onSkip={() => setUploaded(true)} onCancel={() => setUploaded(true)} />;
 
   return (
@@ -79,7 +76,6 @@ export default function App() {
           {page === "customers" && <Customers API={API} />}
           {page === "journey"   && <Journey API={API} />}
           {page === "alerts"    && <Alerts API={API} />}
-          {page === "lifecycle" && <Lifecycle API={API} />}
         </div>
       </main>
     </div>

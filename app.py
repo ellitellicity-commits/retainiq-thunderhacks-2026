@@ -426,7 +426,8 @@ def get_db_clients():
             co.expiry_date,
             co.value as contract_value,
             co.assigned_to,
-            co.status
+            co.status,
+            co.last_contact as lc
         FROM clients cl
         LEFT JOIN contracts co ON cl.id = co.client_id
         ORDER BY co.expiry_date ASC
@@ -438,6 +439,20 @@ def get_db_clients():
     clients = []
     for row in rows:
         row = dict(row)
+        row['client_name'] = row.get('company_name')
+        row['contract_start'] = row.get('start_date')
+        row['contract_expiry'] = row.get('expiry_date')
+        row['account_manager'] = row.get('assigned_to')
+        row['last_contact'] = row.get('lc')
+        if row.get('last_contact'):
+            try:
+                last = datetime.strptime(row['last_contact'], '%Y-%m-%d')
+                row['days_since_contact'] = (today - last).days
+            except:
+                row['days_since_contact'] = None
+        else:
+            row['days_since_contact'] = None
+
         if row['expiry_date']:
             try:
                 expiry = datetime.strptime(row['expiry_date'], '%Y-%m-%d')

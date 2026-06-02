@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 function getSteps(customer) {
   const score = customer.churn_risk_score;
-  const first = customer.client_name?.split(" ")[0] || "Client";
+  const first = customer.company_name?.split(" ")[0] || "Client";
   const daysUntilExpiry = customer.days_until_expiry;
 
   return [
@@ -64,10 +64,10 @@ function ClientCard({ customer, step }) {
         transition={{ duration: 0.6 }}
         style={{ width: 64, height: 64, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontFamily: "Space Mono", fontWeight: 700, color: step.statusColor, margin: "0 auto 16px", border: "2px solid" }}
       >
-        {customer.client_name?.split(" ").map(n => n[0]).join("").slice(0, 2) || "?"}
+        {customer.company_name?.split(" ").map(n => n[0]).join("").slice(0, 2) || "?"}
       </motion.div>
 
-      <div style={{ fontFamily: "Space Mono", fontSize: 13, fontWeight: 700, textAlign: "center", color: "#e8f0fe", marginBottom: 4 }}>{customer.client_name}</div>
+      <div style={{ fontFamily: "Space Mono", fontSize: 13, fontWeight: 700, textAlign: "center", color: "#e8f0fe", marginBottom: 4 }}>{customer.company_name}</div>
       <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", textAlign: "center", letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>
         {customer.vendor}
       </div>
@@ -172,7 +172,7 @@ export default function Lifecycle({ API }) {
         <div ref={pillsRef} style={{ flex: 1, display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none" }}>
           {customers.map((c, i) => (
             <motion.button key={c.id} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} onClick={() => goTo(i)} style={{ padding: "7px 16px", borderRadius: 999, border: `1px solid ${currentIndex === i ? riskColor(c.churn_risk_score) : "rgba(0,229,255,0.1)"}`, background: currentIndex === i ? `${riskColor(c.churn_risk_score)}18` : "transparent", color: currentIndex === i ? riskColor(c.churn_risk_score) : "#3d5070", fontFamily: "Space Mono", fontSize: 10, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, letterSpacing: 0.5, transition: "all 0.2s ease" }}>
-              {c.client_name?.split(" ")[0] || "Client"}
+              {c.company_name?.split(" ")[0] || "Client"}
             </motion.button>
           ))}
         </div>
@@ -221,7 +221,7 @@ export default function Lifecycle({ API }) {
             {activeStep === 2 && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 14, padding: 22, textAlign: "center" }}>
                 <div style={{ fontFamily: "Space Mono", fontSize: 12, color: "#f87171", fontWeight: 700, marginBottom: 6 }}>
-                  ⚠ {customer.client_name?.split(" ")[0]} needs outreach NOW
+                  ⚠ {customer.company_name?.split(" ")[0]} needs outreach NOW
                 </div>
                 <div style={{ fontSize: 12.5, color: "#7a8fb0", marginBottom: 14 }}>
                   Switch to Alerts tab to generate a renewal email instantly
