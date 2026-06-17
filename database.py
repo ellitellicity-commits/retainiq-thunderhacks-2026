@@ -52,6 +52,7 @@ def init_db():
             value REAL,
             status TEXT DEFAULT 'active',
             assigned_to TEXT,
+            last_contact TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (client_id) REFERENCES clients(id)
         )

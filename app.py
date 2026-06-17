@@ -6,6 +6,15 @@ from model import load_and_train, get_dataframe, score_new_customer, _assign_sta
 from database import get_db, init_db
 
 app = Flask(__name__)
+from contacts_api import contacts_bp
+app.register_blueprint(contacts_bp)
+from quotes_api import quotes_bp
+app.register_blueprint(quotes_bp)
+
+
+from deals_api import deals_bp
+app.register_blueprint(deals_bp)
+
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

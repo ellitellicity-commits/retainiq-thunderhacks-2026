@@ -27,7 +27,7 @@ export default function Login({ onLogin }) {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      fontFamily: "DM Sans, sans-serif",
+      fontFamily: "Inter, sans-serif",
     }}>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -46,17 +46,17 @@ export default function Login({ onLogin }) {
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <div style={{ fontSize: 36, marginBottom: 10 }}>⚡</div>
-          <div style={{ fontFamily: "Space Mono", fontSize: 22, fontWeight: 700, color: "#e8f0fe", letterSpacing: -0.3 }}>
+          <div style={{ fontFamily: "Inter", fontSize: 22, fontWeight: 700, color: "#e8f0fe", letterSpacing: -0.3 }}>
             RETAINIQ
           </div>
-          <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", letterSpacing: 2, marginTop: 4 }}>
+          <div style={{ fontFamily: "Inter", fontSize: 10, color: "#3d5070", letterSpacing: 2, marginTop: 4 }}>
             BY DIGITAL MOVE
           </div>
         </div>
 
         {/* Username */}
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
+          <div style={{ fontFamily: "Inter", fontSize: 10, color: "#3d5070", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
             Username
           </div>
           <input
@@ -69,7 +69,7 @@ export default function Login({ onLogin }) {
               border: "1px solid rgba(0,229,255,0.12)",
               borderRadius: 10,
               padding: "12px 16px",
-              fontFamily: "DM Sans, sans-serif",
+              fontFamily: "Inter, sans-serif",
               fontSize: 14,
               color: "#e8f0fe",
               outline: "none",
@@ -83,7 +83,7 @@ export default function Login({ onLogin }) {
 
         {/* Password */}
         <div style={{ marginBottom: 24 }}>
-          <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
+          <div style={{ fontFamily: "Inter", fontSize: 10, color: "#3d5070", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
             Password
           </div>
           <input
@@ -97,7 +97,7 @@ export default function Login({ onLogin }) {
               border: "1px solid rgba(0,229,255,0.12)",
               borderRadius: 10,
               padding: "12px 16px",
-              fontFamily: "DM Sans, sans-serif",
+              fontFamily: "Inter, sans-serif",
               fontSize: 14,
               color: "#e8f0fe",
               outline: "none",
@@ -114,7 +114,7 @@ export default function Login({ onLogin }) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            style={{ color: "#ef4444", fontFamily: "Space Mono", fontSize: 11, marginBottom: 16, textAlign: "center" }}
+            style={{ color: "#ef4444", fontFamily: "Inter", fontSize: 11, marginBottom: 16, textAlign: "center" }}
           >
             {error}
           </motion.div>
@@ -132,7 +132,7 @@ export default function Login({ onLogin }) {
             borderRadius: 10,
             padding: "13px",
             color: "#00e5ff",
-            fontFamily: "Space Mono",
+            fontFamily: "Inter",
             fontSize: 12,
             fontWeight: 700,
             letterSpacing: 2,
@@ -143,7 +143,7 @@ export default function Login({ onLogin }) {
           {loading ? "AUTHENTICATING..." : "LOGIN →"}
         </motion.button>
 
-        <div style={{ textAlign: "center", marginTop: 24, fontFamily: "Space Mono", fontSize: 10, color: "#3d5070" }}>
+        <div style={{ textAlign: "center", marginTop: 24, fontFamily: "Inter", fontSize: 10, color: "#3d5070" }}>
           Powered by RetainIQ · Digital Move IT & Telecom
         </div>
       </motion.div>

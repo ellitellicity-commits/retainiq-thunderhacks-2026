@@ -1,264 +1,159 @@
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect } from "react";
 
-function TypeWriter({ text, speed = 12 }) {
-  const [displayed, setDisplayed] = useState("");
-  const indexRef = useRef(0);
-  const intervalRef = useRef(null);
+const PROB = { "New Leads": 0.10, "Qualified": 0.25, "Demo": 0.40, "Quote sent": 0.60, "Negotiation": 0.80 };
+const OPEN_STAGES = ["New Leads", "Qualified", "Demo", "Quote sent", "Negotiation"];
 
-  useEffect(() => {
-    setDisplayed("");
-    indexRef.current = 0;
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (!text) return;
-    intervalRef.current = setInterval(() => {
-      if (indexRef.current < text.length) {
-        setDisplayed(text.slice(0, indexRef.current + 1));
-        indexRef.current++;
-      } else {
-        clearInterval(intervalRef.current);
-      }
-    }, speed);
-    return () => clearInterval(intervalRef.current);
-  }, [text, speed]);
+const fmtBig = (v) => { v = Number(v || 0); return v >= 1e6 ? "$" + (v / 1e6).toFixed(2) + "M" : "$" + Math.round(v / 1e3) + "K"; };
+const initials = (name) => { if (!name) return "—"; const p = name.trim().split(/\s+/); return ((p[0] ? p[0][0] : "") + (p[1] ? p[1][0] : "")).toUpperCase() || "—"; };
 
-  return (
-    <span style={{ whiteSpace: "pre-wrap" }}>
-      {displayed}
-      <motion.span animate={{ opacity: [1, 0, 1] }} transition={{ duration: 1, repeat: Infinity }} style={{ display: "inline-block", width: 7, height: 13, background: "#00e5ff", verticalAlign: "middle", marginLeft: 2, boxShadow: "0 0 8px #00e5ff" }} />
-    </span>
-  );
-}
+const card = { background: "#262624", border: "1px solid #45433d", borderRadius: 12, padding: "16px 18px" };
+const cardTitle = { fontSize: 14, fontWeight: 600, color: "#f4f4f2", marginBottom: 16 };
 
-function RiskMeter({ score }) {
-  const color = score > 85 ? "#ef4444" : score > 70 ? "#f59e0b" : "#10b981";
-  const segments = 10;
-  const filled = Math.round((score / 100) * segments);
-  return (
-    <div style={{ display: "flex", gap: 3 }}>
-      {Array.from({ length: segments }).map((_, i) => (
-        <motion.div key={i} initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: i * 0.04, duration: 0.3 }} style={{ width: 4, height: i < filled ? 16 + (i % 3) * 3 : 8, borderRadius: 2, background: i < filled ? color : "rgba(255,255,255,0.06)", boxShadow: i < filled ? `0 0 6px ${color}` : "none", transformOrigin: "bottom" }} />
-      ))}
-    </div>
-  );
-}
+export default function Analytics({ API }) {
+  const [deals, setDeals] = useState([]);
+  const [horizon, setHorizon] = useState("3");
 
-function AlertCard({ customer, isSelected, onClick, index }) {
-  const [hovered, setHovered] = useState(false);
-  const score = customer.churn_risk_score;
-  const color = score > 85 ? "#ef4444" : "#f59e0b";
-  const initials = customer.client_name?.split(" ").map(n => n[0]).join("").slice(0, 2) || "?";
-  const daysUntilExpiry = customer.days_until_expiry;
+  const refetch = () => fetch(`${API}/api/db/deals`).then(r => r.json()).then(setDeals).catch(() => setDeals([]));
+  useEffect(() => { refetch(); }, [API]);
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.35 }}
-      whileHover={{ x: 6 }}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
-      onClick={onClick}
-      style={{
-        background: isSelected ? `${color}08` : "#1a2236",
-        border: `1px solid ${isSelected ? color + "50" : hovered ? "rgba(0,229,255,0.2)" : "rgba(0,229,255,0.1)"}`,
-        borderLeft: `3px solid ${isSelected ? color : hovered ? "#00e5ff" : color + "60"}`,
-        borderRadius: 12,
-        padding: "14px 16px",
-        marginBottom: 10,
-        cursor: "pointer",
-        transition: "background 0.2s ease, border-color 0.2s ease",
-        boxShadow: isSelected ? `0 0 20px ${color}20` : "none",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {score > 90 && (
-        <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0, 0.3] }} transition={{ duration: 2, repeat: Infinity }} style={{ position: "absolute", top: 10, right: 10, width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
-      )}
+  const open = deals.filter(d => d.status === "open");
+  const won = deals.filter(d => d.status === "won");
+  const lost = deals.filter(d => d.status === "lost");
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono", fontSize: 13, fontWeight: 700, color, border: `1px solid ${color}40`, background: `${color}10`, flexShrink: 0 }}>
-          {initials}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: "#e8f0fe", marginBottom: 3 }}>{customer.client_name}</div>
-          <div style={{ fontFamily: "Space Mono", fontSize: 9, color: "#3d5070", letterSpacing: 0.5, textTransform: "uppercase" }}>
-            {customer.vendor} · {customer.software}
-          </div>
-          <div style={{ fontFamily: "Space Mono", fontSize: 9, color: daysUntilExpiry < 0 ? "#ef4444" : daysUntilExpiry <= 30 ? "#ef4444" : "#f59e0b", marginTop: 3 }}>
-            {daysUntilExpiry < 0 ? "⚠ CONTRACT EXPIRED" : `⏰ Expires in ${daysUntilExpiry} days`}
-          </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
-          <motion.div animate={{ color, textShadow: isSelected ? `0 0 12px ${color}` : "none" }} transition={{ duration: 0.3 }} style={{ fontFamily: "Space Mono", fontSize: 22, fontWeight: 700, letterSpacing: -1 }}>
-            {score}
-          </motion.div>
-          <RiskMeter score={score} />
-        </div>
-      </div>
+  const pipelineValue = open.reduce((s, d) => s + (d.value || 0), 0);
+  const weighted = open.reduce((s, d) => s + (d.value || 0) * (PROB[d.stage] || 0), 0);
+  const winRate = (won.length + lost.length) > 0 ? Math.round(won.length / (won.length + lost.length) * 100) : 0;
+  const avgDeal = deals.length ? deals.reduce((s, d) => s + (d.value || 0), 0) / deals.length : 0;
+  const conv = deals.length ? Math.round(won.length / deals.length * 100) : 0;
 
-      <motion.div animate={{ opacity: hovered || isSelected ? 1 : 0 }} transition={{ duration: 0.2 }} style={{ marginTop: 8, fontFamily: "Space Mono", fontSize: 9, color: isSelected ? color : "#00e5ff", letterSpacing: 1.5, textTransform: "uppercase" }}>
-        {isSelected ? "GENERATING EMAIL →" : "CLICK TO GENERATE EMAIL →"}
-      </motion.div>
-    </motion.div>
-  );
-}
+  const hM = horizon === "3" ? 3 : horizon === "6" ? 6 : 12;
+  const now = new Date();
+  const months = [];
+  for (let i = 0; i < hM; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    months.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, label: d.toLocaleDateString("en-US", { month: "short" }), total: 0 });
+  }
+  open.forEach(d => {
+    if (!d.expected_close_date) return;
+    const k = String(d.expected_close_date).slice(0, 7);
+    const m = months.find(x => x.key === k);
+    if (m) m.total += (d.value || 0) * (PROB[d.stage] || 0);
+  });
+  const maxMonth = Math.max(1, ...months.map(m => m.total));
+  const fcShades = ["#3B6D11", "#4d8016", "#639922", "#7DB037", "#97C459", "#b0d36f"];
+  const hasForecast = months.some(m => m.total > 0);
 
-export default function Alerts({ API }) {
-  const [alerts, setAlerts] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [email, setEmail] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState(null);
+  const funnel = OPEN_STAGES.map(st => { const ds = open.filter(d => d.stage === st); return { stage: st, n: ds.length, val: ds.reduce((s, d) => s + (d.value || 0), 0) }; });
+  const funnelShades = ["#0F6E56", "#1D9E75", "#3DB390", "#5DCAA5", "#9FE1CB"];
+  const funnelWidths = [100, 86, 70, 55, 42];
 
-  useEffect(() => {
-    fetch(`${API}/api/db/clients`).then(r => r.json()).then(d => {
-      const alertClients = d.filter(c => c.churn_risk_score >= 70);
-      setAlerts(alertClients);
-      setStats({ count: alertClients.length });
-    });
-  }, [API]);
+  const byOwner = {};
+  open.forEach(d => { const o = d.owner || "Unassigned"; byOwner[o] = (byOwner[o] || 0) + (d.value || 0); });
+  const reps = Object.entries(byOwner).map(([owner, val]) => ({ owner, val })).sort((a, b) => b.val - a.val);
+  const maxRep = Math.max(1, ...reps.map(r => r.val));
 
-  const generateEmail = (customer) => {
-    setSelected(customer);
-    setEmail(null);
-    setLoading(true);
-    fetch(`${API}/api/email`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        customer_name: customer.client_name,
-        risk_score: customer.churn_risk_score,
-        plan: customer.vendor,
-        spend: customer.contract_value,
-        days_since_contact: customer.days_since_contact,
-        days_until_expiry: customer.days_until_expiry,
-        software: customer.software,
-      }),
-    })
-      .then(r => r.json())
-      .then(d => { setEmail(d); setLoading(false); });
-  };
+  const kpis = [
+    { label: "Pipeline value", value: fmtBig(pipelineValue), color: "#f4f4f2" },
+    { label: "Weighted forecast", value: fmtBig(weighted), color: "#9FE1CB" },
+    { label: "Win rate", value: winRate + "%", color: "#97C459" },
+    { label: "Avg deal size", value: fmtBig(avgDeal), color: "#f4f4f2" },
+  ];
+
+  const metrics = [
+    ["Opportunities created", String(deals.length), "#f4f4f2"],
+    ["Won deals", String(won.length), "#97C459"],
+    ["Lost deals", String(lost.length), "#d98c8c"],
+    ["Conversion rate", conv + "%", "#f4f4f2"],
+    ["Avg deal size", fmtBig(avgDeal), "#f4f4f2"],
+  ];
 
   return (
     <div>
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 26 }}>
-        <div style={{ fontFamily: "Space Mono", fontSize: 22, fontWeight: 700, color: "#e8f0fe", letterSpacing: -0.3 }}>
-          Alert <span style={{ color: "#ef4444", textShadow: "0 0 14px rgba(239,68,68,0.5)" }}>Center</span>
-        </div>
-        <div style={{ color: "#3d5070", fontSize: 12.5, marginTop: 5 }}>
-          Contracts requiring immediate outreach · {stats?.count || 0} alerts
-        </div>
-      </motion.div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, alignItems: "start" }}>
-        {/* LEFT — alert list */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
         <div>
-          <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12, display: "flex", justifyContent: "space-between" }}>
-            <span>High-Risk Clients</span>
-            <span style={{ color: "#ef4444" }}>{alerts.length} ALERTS</span>
+          <div style={{ fontFamily: "Inter", fontSize: 32, fontWeight: 600, color: "var(--text)", letterSpacing: -0.5 }}>Analytics</div>
+          <div style={{ color: "#C3C1B6", fontSize: 15, marginTop: 6 }}>Sales performance &amp; forecast · Digital Move IT &amp; Telecom</div>
+        </div>
+        <select value={horizon} onChange={(e) => setHorizon(e.target.value)}
+          style={{ background: "#262624", border: "1px solid #45433d", color: "var(--text)", fontFamily: "Inter", fontSize: 13, padding: "9px 12px", borderRadius: 9, cursor: "pointer", outline: "none" }}>
+          <option value="3">Forecast: next 3 months</option>
+          <option value="6">Forecast: next 6 months</option>
+          <option value="12">Forecast: next 12 months</option>
+        </select>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 18 }}>
+        {kpis.map(k => (
+          <div key={k.label} style={card}>
+            <div style={{ fontSize: 13, color: "#bfbfbf", marginBottom: 8 }}>{k.label}</div>
+            <div style={{ fontSize: 28, fontWeight: 600, color: k.color, letterSpacing: -0.5 }}>{k.value}</div>
           </div>
-          <div style={{ maxHeight: "calc(100vh - 320px)", overflowY: "auto", paddingRight: 4 }}>
-            {alerts.map((c, i) => (
-              <AlertCard key={c.id} customer={c} isSelected={selected?.id === c.id} onClick={() => generateEmail(c)} index={i} />
+        ))}
+      </div>
+
+      <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <div style={{ flex: "1 1 360px", minWidth: 320 }}>
+          <div style={{ ...card, marginBottom: 16 }}>
+            <div style={cardTitle}>Revenue forecast</div>
+            {hasForecast ? (
+              <>
+                <div style={{ display: "flex", alignItems: "flex-end", gap: 16, height: 150 }}>
+                  {months.map((m, i) => (
+                    <div key={m.key} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "#f4f4f2", marginBottom: 6 }}>{m.total > 0 ? fmtBig(m.total) : ""}</span>
+                      <div style={{ width: "100%", height: Math.round((m.total / maxMonth) * 120) + 2, background: fcShades[Math.min(i, fcShades.length - 1)], borderRadius: 5 }} />
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
+                  {months.map(m => <span key={m.key} style={{ flex: 1, textAlign: "center", fontSize: 12, color: "#bfbfbf" }}>{m.label}</span>)}
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: 13, color: "#8a8a86", padding: "24px 0" }}>No deals with a close date in this window. Set expected close dates on deals to populate the forecast.</div>
+            )}
+          </div>
+
+          <div style={card}>
+            <div style={cardTitle}>Pipeline funnel</div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 7 }}>
+              {funnel.map((f, i) => (
+                <div key={f.stage} style={{ width: funnelWidths[i] + "%", background: funnelShades[i], color: i === 0 ? "#E1F5EE" : "#04342C", borderRadius: 6, padding: "8px 0", textAlign: "center", fontSize: 13, fontWeight: i === 0 ? 400 : 500 }}>
+                  {f.stage} · {f.n} · {fmtBig(f.val)}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ flex: "1 1 280px", minWidth: 260 }}>
+          <div style={{ ...card, marginBottom: 16 }}>
+            <div style={cardTitle}>Open pipeline by rep</div>
+            {reps.length === 0 && <div style={{ fontSize: 13, color: "#8a8a86" }}>No open deals.</div>}
+            {reps.map(r => (
+              <div key={r.owner} style={{ marginBottom: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 5 }}>
+                  <span style={{ color: "#f4f4f2" }}>{r.owner}</span>
+                  <span style={{ color: "#9FE1CB", fontWeight: 600 }}>{fmtBig(r.val)}</span>
+                </div>
+                <div style={{ height: 8, background: "#3a3a36", borderRadius: 4 }}>
+                  <div style={{ width: Math.round((r.val / maxRep) * 100) + "%", height: 8, background: "#0F6E56", borderRadius: 4 }} />
+                </div>
+              </div>
             ))}
           </div>
-        </div>
 
-        {/* RIGHT — terminal email panel */}
-        <div style={{ position: "sticky", top: 80 }}>
-          <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>
-            Renewal Email Generator
+          <div style={card}>
+            <div style={{ ...cardTitle, marginBottom: 12 }}>Sales metrics</div>
+            <div style={{ fontSize: 13 }}>
+              {metrics.map((m, i) => (
+                <div key={m[0]} style={{ display: "flex", justifyContent: "space-between", padding: "9px 8px", borderRadius: 6, background: i % 2 === 0 ? "#2b2b29" : "transparent" }}>
+                  <span style={{ color: "#bfbfbf" }}>{m[0]}</span>
+                  <span style={{ color: m[2], fontWeight: m[2] !== "#f4f4f2" ? 600 : 400 }}>{m[1]}</span>
+                </div>
+              ))}
+            </div>
           </div>
-
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} style={{ background: "#050d18", border: "1px solid rgba(0,229,255,0.15)", borderRadius: 16, overflow: "hidden", boxShadow: "0 0 40px rgba(0,0,0,0.5)", minHeight: 420, display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "#0a1628", borderBottom: "1px solid rgba(0,229,255,0.08)" }}>
-              <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#ff5f57" }} />
-              <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#febc2e" }} />
-              <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#28c840" }} />
-              <div style={{ fontFamily: "Space Mono", fontSize: 11, color: "rgba(0,229,255,0.35)", marginLeft: 8, letterSpacing: 0.5 }}>
-                retainiq@digital-move ~ renewal-email-generator
-              </div>
-            </div>
-
-            <div style={{ flex: 1, padding: "18px 20px", fontFamily: "Space Mono", fontSize: 12, lineHeight: 1.9, color: "#00e5ff", overflowY: "auto" }}>
-              {!selected && !loading && !email && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: "center", paddingTop: 60 }}>
-                  <div style={{ fontSize: 32, marginBottom: 16 }}>📬</div>
-                  <div style={{ color: "rgba(0,229,255,0.25)", fontSize: 11, lineHeight: 2 }}>
-                    {">"} Select a client from the list{"\n"}
-                    {">"} AI will draft a renewal email{"\n"}
-                    {">"} Watch it type out in real-time
-                  </div>
-                  <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity }} style={{ marginTop: 20, color: "rgba(0,229,255,0.3)", fontSize: 10 }}>
-                    AWAITING INPUT_
-                  </motion.div>
-                </motion.div>
-              )}
-
-              {loading && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <div style={{ color: "rgba(0,229,255,0.5)", marginBottom: 8 }}>{">"} Analyzing client profile...</div>
-                  <div style={{ color: "rgba(0,229,255,0.5)", marginBottom: 8 }}>{">"} Generating renewal email for <span style={{ color: "#00e5ff" }}>{selected?.client_name}</span></div>
-                  <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.8, repeat: Infinity }} style={{ color: "#00e5ff" }}>
-                    {">"} Writing<motion.span animate={{ opacity: [1, 0, 1] }} transition={{ duration: 0.6, repeat: Infinity }}>...</motion.span>
-                  </motion.div>
-                </motion.div>
-              )}
-
-              {email && !loading && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <div style={{ marginBottom: 4, color: "rgba(0,229,255,0.4)" }}>{">"} email compiled successfully</div>
-                  <div style={{ height: 1, background: "rgba(0,229,255,0.08)", margin: "10px 0" }} />
-                  <div style={{ marginBottom: 3 }}><span style={{ color: "#67e8f9", fontWeight: 700 }}>TO:</span><span style={{ color: "#a5f3fc", marginLeft: 8 }}>{email.customer_name}</span></div>
-                  <div style={{ marginBottom: 3 }}><span style={{ color: "#67e8f9", fontWeight: 700 }}>VENDOR:</span><span style={{ color: "#a5f3fc", marginLeft: 8 }}>{selected?.vendor} · {selected?.software}</span></div>
-                  <div style={{ marginBottom: 3 }}><span style={{ color: "#67e8f9", fontWeight: 700 }}>EXPIRY:</span><span style={{ color: "#ef4444", marginLeft: 8 }}>{selected?.contract_expiry} ({selected?.days_until_expiry < 0 ? "EXPIRED" : `${selected?.days_until_expiry} days`})</span></div>
-                  <div style={{ height: 1, background: "rgba(0,229,255,0.08)", margin: "12px 0" }} />
-                  <div style={{ marginBottom: 8 }}>
-                    <span style={{ color: "#67e8f9", fontWeight: 700 }}>SUBJECT:</span>
-                    <div style={{ color: "#cffafe", marginTop: 4, fontSize: 11 }}><TypeWriter key={email.subject} text={email.subject} speed={25} /></div>
-                  </div>
-                  <div style={{ height: 1, background: "rgba(0,229,255,0.08)", margin: "12px 0" }} />
-                  <div>
-                    <span style={{ color: "#67e8f9", fontWeight: 700 }}>BODY:</span>
-                    <div style={{ color: "#cffafe", marginTop: 6, fontSize: 11, lineHeight: 2 }}><TypeWriter key={email.body} text={email.body} speed={8} /></div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-
-            <div style={{ padding: "10px 20px", borderTop: "1px solid rgba(0,229,255,0.06)", display: "flex", justifyContent: "space-between", fontFamily: "Space Mono", fontSize: 9, color: "rgba(0,229,255,0.2)" }}>
-              <span>RETAINIQ v2.0 · DIGITAL MOVE</span>
-              <span>{email ? "EMAIL READY" : loading ? "GENERATING..." : "STANDBY"}</span>
-            </div>
-          </motion.div>
-
-          <AnimatePresence>
-            {email && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} style={{ marginTop: 12, display: "flex", gap: 10 }}>
-                <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => generateEmail(selected)} style={{ flex: 1, background: "rgba(0,229,255,0.08)", border: "1px solid rgba(0,229,255,0.25)", borderRadius: 9, padding: "10px 16px", color: "#00e5ff", fontFamily: "Space Mono", fontSize: 11, fontWeight: 700, cursor: "pointer", letterSpacing: 1 }}>
-                  ↻ REGENERATE
-                </motion.button>
-                <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => {
-                  const text = `Subject: ${email.subject}\n\n${email.body}`;
-                  if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text).then(() => alert("Email copied!"));
-                  } else {
-                    const el = document.createElement('textarea');
-                    el.value = text;
-                    document.body.appendChild(el);
-                    el.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(el);
-                    alert("Email copied!");
-                  }
-                }} style={{ flex: 1, background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)", borderRadius: 9, padding: "10px 16px", color: "#10b981", fontFamily: "Space Mono", fontSize: 11, fontWeight: 700, cursor: "pointer", letterSpacing: 1 }}>
-                  ✓ COPY EMAIL
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
     </div>

@@ -1,270 +1,509 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
+import { motion } from "framer-motion";
 
-function getRiskColor(score) {
-  if (score > 70) return "#ef4444";
-  if (score >= 40) return "#f59e0b";
-  return "#10b981";
-}
+const fmtMoney = (v) =>
+  v === null || v === undefined || v === "" ? "—" : "$" + Number(v).toLocaleString();
+const fmtDate = (s) => {
+  if (!s) return "—";
+  const d = new Date(s);
+  return isNaN(d) ? s : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+};
 
-function getRiskLabel(score) {
-  if (score > 70) return "HIGH";
-  if (score >= 40) return "MED";
-  return "LOW";
-}
+const STATUS = {
+  Expired:   { bg: "#f3dada", fg: "#a83838", label: "Expired" },
+  Critical:  { bg: "#f3dada", fg: "#a83838", label: "Critical" },
+  "At-Risk": { bg: "#efe4c4", fg: "#7d6217", label: "At-risk" },
+  Active:    { bg: "#d7e9e1", fg: "#1b6a58", label: "Active" },
+};
+const statusOf = (s) => STATUS[s] || STATUS.Active;
 
-function CustomerDetail({ customer, onClose }) {
-  const riskColor = getRiskColor(customer.churn_risk_score);
-  const daysUntilExpiry = customer.days_until_expiry;
-  const expiryColor = daysUntilExpiry < 0 ? "#ef4444" : daysUntilExpiry <= 30 ? "#ef4444" : daysUntilExpiry <= 90 ? "#f59e0b" : "#10b981";
+const QUOTE_STATUS = {
+  sent:  { bg: "#d7e9e1", fg: "#1b6a58", t: "Sent" },
+  draft: { bg: "#efe4c4", fg: "#7d6217", t: "Draft" },
+};
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12, height: 0 }}
-      animate={{ opacity: 1, y: 0, height: "auto" }}
-      exit={{ opacity: 0, y: 12, height: 0 }}
-      transition={{ duration: 0.4, ease: "easeInOut" }}
-      style={{ overflow: "hidden", marginBottom: 12 }}
-    >
-      <div style={{
-        background: "#1a2236",
-        border: `1px solid ${riskColor}30`,
-        borderTop: `2px solid ${riskColor}`,
-        borderRadius: 16,
-        padding: 22,
-        boxShadow: `0 0 30px ${riskColor}15`,
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-          <div>
-            <div style={{ fontFamily: "Space Mono", fontSize: 16, fontWeight: 700, color: "#e8f0fe" }}>{customer.company_name}</div>
-            <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", marginTop: 4 }}>
-              {customer.vendor} · {customer.software}
-            </div>
-          </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={onClose}
-            style={{ background: "transparent", border: "1px solid rgba(0,229,255,0.2)", borderRadius: 8, padding: "6px 12px", color: "#3d5070", fontFamily: "Space Mono", fontSize: 10, cursor: "pointer" }}
-          >
-            CLOSE ✕
-          </motion.button>
-        </div>
+const th = { textAlign: "left", padding: "13px 16px", color: "var(--text2)", fontWeight: 500, fontSize: 14, whiteSpace: "nowrap" };
+const td = { padding: "14px 16px", color: "var(--text)", fontSize: 15 };
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-          {[
-            { label: "Contract Value", value: `$${customer.contract_value?.toLocaleString()}`, color: "#00e5ff" },
-            { label: "Contract Start", value: customer.contract_start, color: "#7a8fb0" },
-            { label: "Contract Expiry", value: customer.contract_expiry, color: expiryColor },
-            { label: "Days Until Expiry", value: daysUntilExpiry < 0 ? "EXPIRED" : `${daysUntilExpiry} days`, color: expiryColor },
-            { label: "Last Contact", value: customer.last_contact, color: "#7a8fb0" },
-            { label: "Days Since Contact", value: `${customer.days_since_contact} days`, color: customer.days_since_contact > 60 ? "#f59e0b" : "#10b981" },
-            { label: "Account Manager", value: customer.account_manager, color: "#8b5cf6" },
-            { label: "Risk Score", value: `${customer.churn_risk_score}/100`, color: riskColor },
-          ].map(s => (
-            <div key={s.label} style={{ background: "#0d1526", borderRadius: 10, padding: "12px 14px" }}>
-              <div style={{ fontFamily: "Space Mono", fontSize: 9, color: "#3d5070", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 6 }}>{s.label}</div>
-              <div style={{ fontFamily: "Space Mono", fontSize: 13, fontWeight: 700, color: s.color }}>{s.value}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
+const ctrl = {
+  padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)",
+  background: "#262624", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none",
+};
 
-function CustomerRow({ customer, index, onClick, isSelected }) {
-  const [hovered, setHovered] = useState(false);
-  const riskColor = getRiskColor(customer.churn_risk_score);
-  const initials = customer.company_name?.split(" ").map(n => n[0]).join("").slice(0, 2) || "?";
-  const daysUntilExpiry = customer.days_until_expiry;
-  const expiryColor = daysUntilExpiry < 0 ? "#ef4444" : daysUntilExpiry <= 30 ? "#ef4444" : daysUntilExpiry <= 90 ? "#f59e0b" : "#10b981";
+const cfield = { width: "100%", padding: "8px 11px", borderRadius: 8, border: "1px solid var(--border)", background: "#30302e", color: "var(--text)", fontFamily: "Inter", fontSize: 13.5, outline: "none", boxSizing: "border-box", marginBottom: 8 };
+const iconBtn = { background: "transparent", border: "1px solid var(--border2)", color: "var(--text3)", fontFamily: "Inter", fontSize: 12.5, padding: "4px 10px", borderRadius: 7, cursor: "pointer" };
 
-  return (
-    <motion.tr
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03, duration: 0.3 }}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
-      onClick={onClick}
-      style={{ cursor: "pointer" }}
-    >
-      {/* Client name */}
-      <td style={{ padding: "13px 16px", borderBottom: "1px solid rgba(0,229,255,0.05)", background: isSelected ? "rgba(0,229,255,0.04)" : hovered ? "rgba(0,229,255,0.03)" : "transparent" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Space Mono", fontSize: 11, fontWeight: 700, color: riskColor, border: `1px solid ${riskColor}40`, background: `${riskColor}10`, flexShrink: 0 }}>
-            {initials}
-          </div>
-          <div>
-            <div style={{ fontSize: 13.5, fontWeight: 600, color: "#e8f0fe" }}>{customer.company_name}</div>
-            <div style={{ fontFamily: "Space Mono", fontSize: 9, color: "#3d5070" }}>{customer.account_manager}</div>
-          </div>
-        </div>
-      </td>
-
-      {/* Vendor */}
-      <td style={{ padding: "13px 16px", borderBottom: "1px solid rgba(0,229,255,0.05)", background: isSelected ? "rgba(0,229,255,0.04)" : hovered ? "rgba(0,229,255,0.03)" : "transparent" }}>
-        <span style={{ display: "inline-flex", padding: "3px 10px", borderRadius: 5, fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", fontFamily: "Space Mono", background: "rgba(0,229,255,0.08)", color: "#00e5ff", border: "1px solid rgba(0,229,255,0.2)" }}>
-          {customer.vendor}
-        </span>
-      </td>
-
-      {/* Software */}
-      <td style={{ padding: "13px 16px", borderBottom: "1px solid rgba(0,229,255,0.05)", fontSize: 12, color: "#7a8fb0", background: isSelected ? "rgba(0,229,255,0.04)" : hovered ? "rgba(0,229,255,0.03)" : "transparent" }}>
-        {customer.software}
-      </td>
-
-      {/* Contract value */}
-      <td style={{ padding: "13px 16px", borderBottom: "1px solid rgba(0,229,255,0.05)", fontFamily: "Space Mono", fontSize: 13, color: "#e8f0fe", background: isSelected ? "rgba(0,229,255,0.04)" : hovered ? "rgba(0,229,255,0.03)" : "transparent" }}>
-        <span style={{ color: "#00e5ff" }}>$</span>{customer.contract_value?.toLocaleString()}
-      </td>
-
-      {/* Expiry */}
-      <td style={{ padding: "13px 16px", borderBottom: "1px solid rgba(0,229,255,0.05)", background: isSelected ? "rgba(0,229,255,0.04)" : hovered ? "rgba(0,229,255,0.03)" : "transparent" }}>
-        <div style={{ fontFamily: "Space Mono", fontSize: 12, color: expiryColor, fontWeight: 700 }}>
-          {daysUntilExpiry < 0 ? "EXPIRED" : `${daysUntilExpiry}d`}
-        </div>
-        <div style={{ fontFamily: "Space Mono", fontSize: 9, color: "#3d5070", marginTop: 2 }}>{customer.contract_expiry}</div>
-      </td>
-
-      {/* Risk score */}
-      <td style={{ padding: "13px 16px", borderBottom: "1px solid rgba(0,229,255,0.05)", background: isSelected ? "rgba(0,229,255,0.04)" : hovered ? "rgba(0,229,255,0.03)" : "transparent" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 52, height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 4, overflow: "hidden" }}>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${customer.churn_risk_score}%` }}
-              transition={{ duration: 0.8, delay: index * 0.03 }}
-              style={{ height: "100%", background: riskColor, borderRadius: 4 }}
-            />
-          </div>
-          <span style={{ fontFamily: "Space Mono", fontSize: 13, fontWeight: 700, color: riskColor, minWidth: 28 }}>
-            {customer.churn_risk_score}
-          </span>
-          <span style={{ fontFamily: "Space Mono", fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: `${riskColor}15`, color: riskColor, border: `1px solid ${riskColor}25` }}>
-            {getRiskLabel(customer.churn_risk_score)}
-          </span>
-        </div>
-      </td>
-
-      {/* Stage */}
-      <td style={{ padding: "13px 16px", borderBottom: "1px solid rgba(0,229,255,0.05)", background: isSelected ? "rgba(0,229,255,0.04)" : hovered ? "rgba(0,229,255,0.03)" : "transparent" }}>
-        <span style={{ fontFamily: "Space Mono", fontSize: 10, fontWeight: 700, color: riskColor }}>
-          {customer.journey_stage}
-        </span>
-      </td>
-    </motion.tr>
-  );
-}
-
-export default function Customers({ API }) {
-  const [customers, setCustomers] = useState([]);
-  const [selected, setSelected] = useState(null);
+export default function Clients({ API }) {
+  const [clients, setClients] = useState([]);
   const [search, setSearch] = useState("");
-  const [vendorFilter, setVendorFilter] = useState("all");
-  const [riskFilter, setRiskFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("churn_risk_score");
-  const [sortDir, setSortDir] = useState("desc");
+  const [sortKey, setSortKey] = useState("expiry");
+  const [filter, setFilter] = useState("all");
+  const [renewWithin, setRenewWithin] = useState("any");
+  const [minValue, setMinValue] = useState("");
+  const [maxValue, setMaxValue] = useState("");
+  const [selected, setSelected] = useState(null);
+  const [email, setEmail] = useState(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+
+  // Contacts
+  const [contacts, setContacts] = useState([]);
+  const [contactsLoading, setContactsLoading] = useState(false);
+  const [contactForm, setContactForm] = useState(null);
+  const [contactSaving, setContactSaving] = useState(false);
+  const [selectedContactId, setSelectedContactId] = useState("");
+
+  // Quotes (read-only, from Pipeline)
+  const [quotes, setQuotes] = useState([]);
+  const [quotesLoading, setQuotesLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`${API}/api/db/clients`).then(r => r.json()).then(setCustomers);
+    fetch(`${API}/api/db/clients`).then(r => r.json()).then(setClients).catch(() => setClients([]));
   }, [API]);
 
-  const vendors = ["all", ...new Set(customers.map(c => c.vendor))];
+  const nameOf = (c) => c.company_name || c.client_name || "—";
 
-  const filtered = customers
-    .filter(c => {
-      const matchSearch = !search || c.company_name?.toLowerCase().includes(search.toLowerCase()) || c.vendor?.toLowerCase().includes(search.toLowerCase()) || c.software?.toLowerCase().includes(search.toLowerCase());
-      const matchVendor = vendorFilter === "all" || c.vendor === vendorFilter;
-      const matchRisk = riskFilter === "all" || (riskFilter === "high" && c.churn_risk_score > 70) || (riskFilter === "medium" && c.churn_risk_score >= 40 && c.churn_risk_score <= 70) || (riskFilter === "low" && c.churn_risk_score < 40);
-      return matchSearch && matchVendor && matchRisk;
-    })
-    .sort((a, b) => {
-      const dir = sortDir === "asc" ? 1 : -1;
-      if (typeof a[sortBy] === "string") return dir * a[sortBy].localeCompare(b[sortBy]);
-      return dir * (a[sortBy] - b[sortBy]);
+  let list = clients.filter(c => {
+    if (filter === "critical") return c.journey_stage === "Expired" || c.journey_stage === "Critical";
+    if (filter === "atrisk")   return c.journey_stage === "At-Risk";
+    if (filter === "healthy")  return c.journey_stage === "Active";
+    return true;
+  });
+
+  if (search.trim()) {
+    const q = search.toLowerCase();
+    list = list.filter(c =>
+      nameOf(c).toLowerCase().includes(q) ||
+      (c.software || "").toLowerCase().includes(q) ||
+      (c.vendor || "").toLowerCase().includes(q) ||
+      (c.account_manager || "").toLowerCase().includes(q)
+    );
+  }
+
+  const parseNum = (x) => {
+    if (x === null || x === undefined || x === "") return null;
+    const n = Number(String(x).replace(/[^0-9.\-]/g, ""));
+    return isNaN(n) ? null : n;
+  };
+  const min = parseNum(minValue);
+  const max = parseNum(maxValue);
+  if (min != null || max != null) {
+    list = list.filter(c => {
+      const v = parseNum(c.contract_value) ?? 0;
+      if (min != null && v < min) return false;
+      if (max != null && v > max) return false;
+      return true;
     });
+  }
 
-  const toggleSort = (col) => {
-    if (sortBy === col) setSortDir(d => d === "asc" ? "desc" : "asc");
-    else { setSortBy(col); setSortDir("desc"); }
+  if (renewWithin !== "any") {
+    list = list.filter(c => {
+      const d = c.days_until_expiry;
+      if (d == null) return false;
+      if (renewWithin === "expired") return d < 0;
+      return d >= 0 && d <= Number(renewWithin);
+    });
+  }
+
+  list = [...list].sort((a, b) => {
+    if (sortKey === "value")  return (b.contract_value || 0) - (a.contract_value || 0);
+    if (sortKey === "name")   return nameOf(a).localeCompare(nameOf(b));
+    if (sortKey === "status") return (b.churn_risk_score || 0) - (a.churn_risk_score || 0);
+    const av = a.days_until_expiry == null ? 99999 : a.days_until_expiry;
+    const bv = b.days_until_expiry == null ? 99999 : b.days_until_expiry;
+    return av - bv;
+  });
+
+  const clearFilters = () => {
+    setSearch(""); setFilter("all"); setRenewWithin("any"); setMinValue(""); setMaxValue("");
+  };
+  const activeFilters = search.trim() || filter !== "all" || renewWithin !== "any" || minValue !== "" || maxValue !== "";
+
+  const loadContacts = (clientId) => {
+    setContactsLoading(true);
+    fetch(`${API}/api/db/contacts?client_id=${clientId}`)
+      .then(r => r.json())
+      .then(d => {
+        const arr = Array.isArray(d) ? d : [];
+        setContacts(arr);
+        const primary = arr.find(c => c.is_primary) || arr[0];
+        setSelectedContactId(primary ? String(primary.id) : "");
+      })
+      .catch(() => { setContacts([]); setSelectedContactId(""); })
+      .finally(() => setContactsLoading(false));
   };
 
-  const SortTh = ({ col, label }) => (
-    <th onClick={() => toggleSort(col)} style={{ padding: "10px 16px", textAlign: "left", fontFamily: "Space Mono", fontSize: 10, textTransform: "uppercase", letterSpacing: 1.5, color: sortBy === col ? "#00e5ff" : "#3d5070", borderBottom: "1px solid rgba(0,229,255,0.1)", cursor: "pointer", whiteSpace: "nowrap", userSelect: "none" }}>
-      {label} {sortBy === col ? (sortDir === "asc" ? "↑" : "↓") : ""}
-    </th>
+  const loadQuotes = (companyName) => {
+    if (!companyName || companyName === "—") { setQuotes([]); return; }
+    setQuotesLoading(true);
+    fetch(`${API}/api/db/quotes?company=${encodeURIComponent(companyName)}`)
+      .then(r => r.json())
+      .then(d => setQuotes(Array.isArray(d) ? d : []))
+      .catch(() => setQuotes([]))
+      .finally(() => setQuotesLoading(false));
+  };
+
+  const openClient = (c) => {
+    setSelected(c); setEmail(null);
+    setContacts([]); setContactForm(null); setSelectedContactId("");
+    setQuotes([]);
+    loadContacts(c.id);
+    loadQuotes(nameOf(c));
+  };
+  const closeDrawer = () => {
+    setSelected(null); setEmail(null); setEmailLoading(false);
+    setContacts([]); setContactForm(null); setSelectedContactId("");
+    setQuotes([]);
+  };
+
+  const openAddContact = () => setContactForm({ name: "", title: "", email: "", phone: "", is_primary: contacts.length === 0 });
+  const openEditContact = (ct) => setContactForm({ id: ct.id, name: ct.name || "", title: ct.title || "", email: ct.email || "", phone: ct.phone || "", is_primary: !!ct.is_primary });
+
+  const saveContact = () => {
+    if (!contactForm || !selected) return;
+    if (!(contactForm.name || "").trim()) return;
+    setContactSaving(true);
+    const isEdit = !!contactForm.id;
+    const url = isEdit ? `${API}/api/db/contacts/${contactForm.id}` : `${API}/api/db/contacts`;
+    const payload = {
+      name: contactForm.name, title: contactForm.title, email: contactForm.email,
+      phone: contactForm.phone, is_primary: contactForm.is_primary ? 1 : 0,
+    };
+    if (!isEdit) payload.client_id = selected.id;
+    fetch(url, { method: isEdit ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+      .then(r => r.json())
+      .then(() => { setContactForm(null); loadContacts(selected.id); })
+      .catch(() => {})
+      .finally(() => setContactSaving(false));
+  };
+
+  const deleteContact = (id) => {
+    if (!selected) return;
+    fetch(`${API}/api/db/contacts/${id}`, { method: "DELETE" })
+      .then(() => loadContacts(selected.id))
+      .catch(() => {});
+  };
+
+  const generateEmail = () => {
+    if (!selected) return;
+    setEmailLoading(true);
+    setEmail(null);
+    fetch(`${API}/api/email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: nameOf(selected),
+        plan: selected.software,
+        spend: selected.contract_value,
+        risk_score: selected.churn_risk_score,
+        days_since_contact: selected.days_since_contact,
+        days_until_expiry: selected.days_until_expiry,
+        software: selected.software,
+        contract_expiry: selected.contract_expiry,
+        account_manager: selected.account_manager,
+      }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        let body = d.body || "";
+        const rc = contacts.find(c => String(c.id) === selectedContactId);
+        if (rc && rc.name && body && !/^\s*(hi|hello|dear)\b/i.test(body)) {
+          const first = rc.name.trim().split(/\s+/)[0];
+          body = "Hi " + first + ",\n\n" + body;
+        }
+        setEmail({ subject: d.subject || "", body });
+      })
+      .catch(() => setEmail({ subject: "", body: "Could not generate the email. Make sure the backend is running." }))
+      .finally(() => setEmailLoading(false));
+  };
+
+  const copyEmail = () => { if (email) navigator.clipboard.writeText(`Subject: ${email.subject}\n\n${email.body}`); };
+  const openInMail = () => {
+    if (!email) return;
+    const rc = contacts.find(c => String(c.id) === selectedContactId);
+    const to = rc && rc.email ? rc.email : "";
+    window.location.href = "mailto:" + to + "?subject=" + encodeURIComponent(email.subject) + "&body=" + encodeURIComponent(email.body);
+  };
+
+  const pill = { padding: "7px 16px", borderRadius: 999, fontFamily: "Inter", fontSize: 14, fontWeight: 500, cursor: "pointer" };
+
+  const contactFormEl = (
+    <div style={{ border: "1px solid var(--border2)", borderRadius: 10, padding: "12px 13px", marginBottom: 8, background: "#2b2b29" }}>
+      <input style={cfield} placeholder="Name" value={contactForm ? contactForm.name : ""} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })} />
+      <input style={cfield} placeholder="Title (e.g. IT Director)" value={contactForm ? contactForm.title : ""} onChange={(e) => setContactForm({ ...contactForm, title: e.target.value })} />
+      <input style={cfield} placeholder="Email" value={contactForm ? contactForm.email : ""} onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })} />
+      <input style={cfield} placeholder="Phone" value={contactForm ? contactForm.phone : ""} onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })} />
+      <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text2)", marginBottom: 10, cursor: "pointer" }}>
+        <input type="checkbox" checked={!!(contactForm && contactForm.is_primary)} onChange={(e) => setContactForm({ ...contactForm, is_primary: e.target.checked })} />
+        Primary contact
+      </label>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={saveContact} disabled={contactSaving}
+          style={{ flex: 1, padding: "8px", borderRadius: 8, border: "none", background: "var(--cyan)", color: "#fff", fontFamily: "Inter", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: contactSaving ? 0.7 : 1 }}>
+          {contactSaving ? "Saving…" : (contactForm && contactForm.id ? "Save" : "Add contact")}
+        </button>
+        <button onClick={() => setContactForm(null)}
+          style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid var(--border2)", background: "transparent", color: "var(--text3)", fontFamily: "Inter", fontSize: 13, cursor: "pointer" }}>Cancel</button>
+      </div>
+    </div>
   );
+
+  const drawer = selected ? createPortal(
+    <>
+      <div onClick={closeDrawer}
+        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 9998 }} />
+      <motion.div
+        initial={{ x: 480 }} animate={{ x: 0 }} transition={{ type: "tween", duration: 0.25 }}
+        style={{
+          position: "fixed", top: 0, right: 0, height: "100vh", width: 560, maxWidth: "92vw",
+          background: "#262624", borderLeft: "1px solid var(--border2)", zIndex: 9999,
+          overflowY: "auto", fontFamily: "Inter", boxShadow: "-8px 0 30px rgba(0,0,0,0.5)",
+        }}>
+        <div style={{ padding: "24px 34px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 600, color: "var(--text)" }}>{nameOf(selected)}</div>
+              {(() => { const s = statusOf(selected.journey_stage);
+                return <span style={{ background: s.bg, color: s.fg, fontSize: 13, padding: "3px 12px", borderRadius: 6, fontWeight: 500, display: "inline-block", marginTop: 8 }}>{s.label}</span>; })()}
+            </div>
+            <button onClick={closeDrawer}
+              style={{ background: "transparent", border: "none", color: "var(--text3)", fontSize: 26, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 18px", padding: "18px 0", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+            {[
+              ["Software", selected.software || "—"],
+              ["Vendor", selected.vendor || "—"],
+              ["Contract value", fmtMoney(selected.contract_value)],
+              ["Account manager", selected.account_manager || "—"],
+              ["Start date", fmtDate(selected.contract_start || selected.start_date)],
+              ["Renewal date", fmtDate(selected.contract_expiry)],
+              ["Days until renewal", selected.days_until_expiry == null ? "—" : (selected.days_until_expiry < 0 ? "Expired" : selected.days_until_expiry + " days")],
+              ["Last contact", selected.days_since_contact == null ? "—" : selected.days_since_contact + " days ago"],
+            ].map(([k, v]) => (
+              <div key={k}>
+                <div style={{ fontSize: 12.5, color: "var(--text3)", marginBottom: 3 }}>{k}</div>
+                <div style={{ fontSize: 15, color: "var(--text)" }}>{v}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Contacts */}
+          <div style={{ marginTop: 22 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)" }}>Contacts</div>
+              {!contactForm && (
+                <button onClick={openAddContact}
+                  style={{ background: "transparent", border: "1px solid var(--border2)", color: "var(--cyan)", fontFamily: "Inter", fontSize: 13, fontWeight: 600, padding: "5px 12px", borderRadius: 8, cursor: "pointer" }}>+ Add contact</button>
+              )}
+            </div>
+            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 12 }}>People at this company you work with.</div>
+
+            {contactsLoading && <div style={{ fontSize: 13, color: "var(--text3)" }}>Loading…</div>}
+            {!contactsLoading && contacts.length === 0 && !contactForm && (
+              <div style={{ fontSize: 13, color: "var(--text3)", padding: "4px 0 8px" }}>No contacts yet.</div>
+            )}
+
+            {contacts.map((ct) => (
+              contactForm && contactForm.id === ct.id ? (
+                <div key={ct.id}>{contactFormEl}</div>
+              ) : (
+                <div key={ct.id} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: "11px 13px", marginBottom: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 14.5, fontWeight: 600, color: "var(--text)" }}>
+                        {ct.name}
+                        {ct.is_primary ? <span style={{ marginLeft: 8, fontSize: 11, color: "#9FE1CB", background: "rgba(15,110,86,.22)", padding: "1px 7px", borderRadius: 5 }}>Primary</span> : null}
+                      </div>
+                      {ct.title ? <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 2 }}>{ct.title}</div> : null}
+                      {ct.email ? <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 2 }}>{ct.email}</div> : null}
+                      {ct.phone ? <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 2 }}>{ct.phone}</div> : null}
+                    </div>
+                    <div style={{ display: "flex", gap: 6, flex: "0 0 auto", marginLeft: 8 }}>
+                      <button onClick={() => openEditContact(ct)} style={iconBtn}>Edit</button>
+                      <button onClick={() => deleteContact(ct.id)} style={iconBtn}>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              )
+            ))}
+
+            {contactForm && !contactForm.id && contactFormEl}
+          </div>
+
+          {/* Quotes (read-only) */}
+          <div style={{ marginTop: 22 }}>
+            <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>Quotes</div>
+            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 12 }}>Quotes raised for this company in Pipeline.</div>
+
+            {quotesLoading && <div style={{ fontSize: 13, color: "var(--text3)" }}>Loading…</div>}
+            {!quotesLoading && quotes.length === 0 && (
+              <div style={{ fontSize: 13, color: "var(--text3)", padding: "4px 0 8px" }}>No quotes yet. Build one from the Pipeline tab.</div>
+            )}
+
+            {quotes.map((q) => {
+              const s = QUOTE_STATUS[q.status];
+              return (
+                <div key={q.deal_id} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: "11px 13px", marginBottom: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 15.5, fontWeight: 600, color: "var(--text)" }}>{fmtMoney(Math.round(q.total))}</div>
+                      <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 3 }}>
+                        {q.item_count} item{q.item_count === 1 ? "" : "s"} · {q.stage}{q.discount ? " · " + q.discount + "% off" : ""}
+                      </div>
+                    </div>
+                    {s ? <span style={{ background: s.bg, color: s.fg, fontSize: 12, fontWeight: 600, padding: "2px 10px", borderRadius: 6, flex: "0 0 auto", marginLeft: 8 }}>{s.t}</span> : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* AI email */}
+          <div style={{ marginTop: 22 }}>
+            <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>AI renewal email</div>
+            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 14 }}>Generated by LLaMA via Groq, personalized to this client.</div>
+
+            {contacts.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 12.5, color: "var(--text3)", marginBottom: 4 }}>Send to</div>
+                <select value={selectedContactId} onChange={(e) => setSelectedContactId(e.target.value)}
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "#30302e", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none", cursor: "pointer", boxSizing: "border-box" }}>
+                  <option value="">No specific recipient</option>
+                  {contacts.map(c => <option key={c.id} value={String(c.id)}>{c.name}{c.title ? " — " + c.title : ""}</option>)}
+                </select>
+              </div>
+            )}
+
+            {!email && (
+              <button onClick={generateEmail} disabled={emailLoading}
+                style={{ width: "100%", padding: "11px 16px", borderRadius: 10, border: "none",
+                  background: "var(--cyan)", color: "#ffffff", fontFamily: "Inter", fontSize: 14, fontWeight: 600,
+                  cursor: emailLoading ? "default" : "pointer", opacity: emailLoading ? 0.7 : 1 }}>
+                {emailLoading ? "Drafting…" : "Generate renewal email"}
+              </button>
+            )}
+
+            {email && (
+              <div>
+                <div style={{ fontSize: 12.5, color: "var(--text3)", marginBottom: 4 }}>Subject</div>
+                <input value={email.subject} onChange={(e) => setEmail({ ...email, subject: e.target.value })}
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid var(--border)",
+                    background: "#30302e", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none", marginBottom: 12, boxSizing: "border-box" }} />
+                <div style={{ fontSize: 12.5, color: "var(--text3)", marginBottom: 4 }}>Body</div>
+                <textarea value={email.body} onChange={(e) => setEmail({ ...email, body: e.target.value })} rows={12}
+                  style={{ width: "100%", padding: "11px 13px", borderRadius: 8, border: "1px solid var(--border)",
+                    background: "#30302e", color: "var(--text)", fontFamily: "Inter", fontSize: 14, lineHeight: 1.55, outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+                <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+                  <button onClick={openInMail}
+                    style={{ flex: "1 1 auto", padding: "10px 14px", borderRadius: 9, border: "none", background: "var(--cyan)", color: "#fff", fontFamily: "Inter", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Open in email</button>
+                  <button onClick={copyEmail}
+                    style={{ padding: "10px 14px", borderRadius: 9, border: "1px solid var(--border2)", background: "transparent", color: "var(--text)", fontFamily: "Inter", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>Copy</button>
+                  <button onClick={generateEmail} disabled={emailLoading}
+                    style={{ padding: "10px 14px", borderRadius: 9, border: "1px solid var(--border2)", background: "transparent", color: "var(--text2)", fontFamily: "Inter", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+                    {emailLoading ? "…" : "Regenerate"}</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </>,
+    document.body
+  ) : null;
 
   return (
     <div>
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 22 }}>
-        <div style={{ fontFamily: "Space Mono", fontSize: 22, fontWeight: 700, color: "#e8f0fe", letterSpacing: -0.3 }}>
-          Client <span style={{ color: "#00e5ff", textShadow: "0 0 14px rgba(0,229,255,0.5)" }}>Intelligence</span>
-        </div>
-        <div style={{ color: "#3d5070", fontSize: 12.5, marginTop: 5 }}>
-          {customers.length} clients tracked · click any row to inspect
-        </div>
-      </motion.div>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ fontFamily: "Inter", fontSize: 32, fontWeight: 600, color: "var(--text)", letterSpacing: -0.5 }}>Clients</div>
+        <div style={{ color: "#C3C1B6", fontSize: 15, marginTop: 6 }}>Manage accounts &amp; renewals · Digital Move IT &amp; Telecom</div>
+      </div>
 
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
-        <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
-          <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#3d5070", fontSize: 13 }}>⌕</span>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search clients, vendors, software..." style={{ width: "100%", background: "#1a2236", border: "1px solid rgba(0,229,255,0.12)", borderRadius: 9, padding: "8px 14px 8px 32px", fontFamily: "DM Sans, sans-serif", fontSize: 13, color: "#e8f0fe", outline: "none", boxSizing: "border-box" }} />
-        </div>
-
-        <select value={vendorFilter} onChange={e => setVendorFilter(e.target.value)} style={{ background: "#1a2236", border: "1px solid rgba(0,229,255,0.12)", borderRadius: 9, padding: "8px 14px", fontFamily: "Space Mono", fontSize: 10, color: "#00e5ff", outline: "none", cursor: "pointer" }}>
-          {vendors.map(v => <option key={v} value={v}>{v === "all" ? "All Vendors" : v}</option>)}
+      <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+        <input value={search} onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search client, software, or account manager…"
+          style={{ ...ctrl, flex: "1 1 260px" }} />
+        <select value={sortKey} onChange={(e) => setSortKey(e.target.value)} style={{ ...ctrl, cursor: "pointer" }}>
+          <option value="expiry">Sort: Renewal soonest</option>
+          <option value="value">Sort: Highest value</option>
+          <option value="status">Sort: Most at risk</option>
+          <option value="name">Sort: Name (A–Z)</option>
         </select>
+      </div>
 
-        {[{ id: "all", label: "All Risk", color: "#00e5ff" }, { id: "high", label: "High", color: "#ef4444" }, { id: "medium", label: "Medium", color: "#f59e0b" }, { id: "low", label: "Low", color: "#10b981" }].map(f => (
-          <motion.button key={f.id} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} onClick={() => setRiskFilter(f.id)} style={{ padding: "7px 14px", borderRadius: 999, border: `1px solid ${riskFilter === f.id ? f.color : "rgba(0,229,255,0.1)"}`, background: riskFilter === f.id ? `${f.color}15` : "transparent", color: riskFilter === f.id ? f.color : "#3d5070", fontFamily: "Space Mono", fontSize: 10, fontWeight: 700, cursor: "pointer", letterSpacing: 0.5, transition: "all 0.2s ease" }}>
-            {f.label}
-          </motion.button>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+        <select value={renewWithin} onChange={(e) => setRenewWithin(e.target.value)} style={{ ...ctrl, cursor: "pointer" }}>
+          <option value="any">Renews: any time</option>
+          <option value="30">Renews in ≤ 30 days</option>
+          <option value="90">Renews in ≤ 90 days</option>
+          <option value="180">Renews in ≤ 6 months</option>
+          <option value="365">Renews in ≤ 12 months</option>
+          <option value="expired">Expired only</option>
+        </select>
+        <input type="number" value={minValue} onChange={(e) => setMinValue(e.target.value)}
+          placeholder="Min $" style={{ ...ctrl, width: 120 }} />
+        <span style={{ color: "var(--text3)", fontSize: 14 }}>–</span>
+        <input type="number" value={maxValue} onChange={(e) => setMaxValue(e.target.value)}
+          placeholder="Max $" style={{ ...ctrl, width: 120 }} />
+        {activeFilters && (
+          <button onClick={clearFilters}
+            style={{ ...ctrl, cursor: "pointer", color: "var(--text2)", background: "transparent" }}>Clear filters</button>
+        )}
+      </div>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
+        {[["all", "All"], ["critical", "Critical"], ["atrisk", "At Risk"], ["healthy", "Healthy"]].map(([id, label]) => (
+          <button key={id} onClick={() => setFilter(id)}
+            style={{ ...pill,
+              border: "1px solid " + (filter === id ? "var(--cyan)" : "var(--border)"),
+              background: filter === id ? "var(--cyan-dim)" : "transparent",
+              color: filter === id ? "var(--cyan)" : "var(--text2)" }}>
+            {label}
+          </button>
         ))}
+        <div style={{ marginLeft: "auto", fontSize: 14, color: "var(--text3)" }}>{list.length} clients</div>
+      </div>
 
-        <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", marginLeft: "auto" }}>
-          {filtered.length} RESULTS
-        </div>
-      </motion.div>
-
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ background: "#1a2236", border: "1px solid rgba(0,229,255,0.1)", borderRadius: 16, overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <div style={{ border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Inter" }}>
           <thead>
-            <tr style={{ background: "#0d1526" }}>
-              <SortTh col="client_name" label="Client" />
-              <SortTh col="vendor" label="Vendor" />
-              <th style={{ padding: "10px 16px", textAlign: "left", fontFamily: "Space Mono", fontSize: 10, textTransform: "uppercase", letterSpacing: 1.5, color: "#3d5070", borderBottom: "1px solid rgba(0,229,255,0.1)" }}>Software</th>
-              <SortTh col="contract_value" label="Value" />
-              <SortTh col="days_until_expiry" label="Expiry" />
-              <SortTh col="churn_risk_score" label="Risk Score" />
-              <SortTh col="journey_stage" label="Stage" />
+            <tr style={{ background: "#262624" }}>
+              <th style={th}>Client</th>
+              <th style={th}>Software</th>
+              <th style={{ ...th, textAlign: "right" }}>Value</th>
+              <th style={th}>Renews</th>
+              <th style={th}>Owner</th>
+              <th style={th}>Status</th>
             </tr>
           </thead>
           <tbody>
-            <AnimatePresence>
-              {filtered.map((c, i) => (
-                <React.Fragment key={c.id}>
-                  <CustomerRow customer={c} index={i} isSelected={selected?.id === c.id} onClick={() => setSelected(selected?.id === c.id ? null : c)} />
-                  {selected?.id === c.id && (
-                    <tr>
-                      <td colSpan={7} style={{ padding: "0 12px 12px", background: "transparent" }}>
-                        <CustomerDetail customer={selected} onClose={() => setSelected(null)} />
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </AnimatePresence>
+            {list.map((c) => {
+              const s = statusOf(c.journey_stage);
+              return (
+                <tr key={c.id} onClick={() => openClient(c)}
+                  style={{ borderTop: "1px solid var(--border)", cursor: "pointer" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "#2b2b29")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+                  <td style={{ ...td, fontWeight: 600 }}>{nameOf(c)}</td>
+                  <td style={{ ...td, color: "var(--text2)" }}>
+                    {c.software || "—"}
+                    {c.vendor ? <div style={{ fontSize: 12.5, color: "var(--text3)" }}>{c.vendor}</div> : null}
+                  </td>
+                  <td style={{ ...td, textAlign: "right" }}>{fmtMoney(c.contract_value)}</td>
+                  <td style={{ ...td, color: "var(--text2)" }}>{c.days_until_expiry < 0 ? "Expired" : fmtDate(c.contract_expiry)}</td>
+                  <td style={{ ...td, color: "var(--text2)" }}>{c.account_manager || "—"}</td>
+                  <td style={td}><span style={{ background: s.bg, color: s.fg, fontSize: 13, padding: "3px 12px", borderRadius: 6, fontWeight: 500 }}>{s.label}</span></td>
+                </tr>
+              );
+            })}
+            {list.length === 0 && (
+              <tr><td colSpan={6} style={{ ...td, textAlign: "center", color: "var(--text3)", padding: "32px" }}>No clients match your filters.</td></tr>
+            )}
           </tbody>
         </table>
-        {filtered.length === 0 && (
-          <div style={{ textAlign: "center", padding: 48, fontFamily: "Space Mono", fontSize: 12, color: "#3d5070", letterSpacing: 1 }}>
-            NO CLIENTS MATCH YOUR FILTERS
-          </div>
-        )}
-      </motion.div>
+      </div>
+
+      {drawer}
     </div>
   );
 }

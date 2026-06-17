@@ -4,7 +4,7 @@ import os
 from groq import Groq
 from dotenv import load_dotenv
 from database import get_db, init_db
-from datetime import datetime
+from datetime import datetime, date
 
 load_dotenv()
 
@@ -31,9 +31,7 @@ KNOWN_FIELDS = {
 
 def ai_map_columns(columns, sample_rows):
     """Use Groq to intelligently map Excel columns to our database fields"""
-    
     sample_str = "\n".join([str(row) for row in sample_rows[:3]])
-    
     prompt = f"""You are a data mapping expert. Map these Excel columns to CRM database fields.
 
 Excel columns: {columns}
@@ -64,55 +62,116 @@ Respond ONLY with a valid JSON object mapping each column to a field.
 Example: {{"Company Name": "company_name", "Phone": "contact_phone", "Internal ID": "ignore"}}
 
 JSON:"""
-
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=500,
     )
-    
     text = response.choices[0].message.content.strip()
-    # Clean up response
     if "```" in text:
         text = text.split("```")[1].replace("json", "").strip()
-    
     try:
-        mapping = json.loads(text)
-        return mapping
+        return json.loads(text)
     except:
         return {}
 
+def harden_schema(c):
+    """Make sure columns/tables we rely on exist, even on an older DB."""
+    try:
+        c.execute("ALTER TABLE contracts ADD COLUMN last_contact TEXT")
+    except Exception:
+        pass
+    c.execute("""CREATE TABLE IF NOT EXISTS client_contacts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        client_id INTEGER, name TEXT, title TEXT, email TEXT, phone TEXT,
+        is_primary INTEGER DEFAULT 0, created_at TEXT
+    )""")
+    c.execute("""CREATE TABLE IF NOT EXISTS pipeline_deals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        company TEXT, value REAL, stage TEXT, owner TEXT,
+        next_action TEXT, next_action_date TEXT, lead_source TEXT,
+        product TEXT, stage_updated_at TEXT, created_at TEXT, status TEXT,
+        expected_close_date TEXT
+    )""")
+    cols = {r["name"] for r in c.execute("PRAGMA table_info(pipeline_deals)").fetchall()}
+    if "client_id" not in cols:
+        c.execute("ALTER TABLE pipeline_deals ADD COLUMN client_id INTEGER")
+
+def generate_renewal_deals(c):
+    """Create/refresh a renewal opportunity in the pipeline for each expiring contract."""
+    today = date.today()
+    WINDOW = 150
+    made = 0
+    rows = c.execute("""
+        SELECT co.client_id, co.software, co.value, co.expiry_date, co.assigned_to, cl.company_name
+        FROM contracts co JOIN clients cl ON cl.id = co.client_id
+        WHERE co.expiry_date IS NOT NULL
+    """).fetchall()
+    for r in rows:
+        try:
+            exp = datetime.strptime(str(r["expiry_date"])[:10], "%Y-%m-%d").date()
+        except Exception:
+            continue
+        days = (exp - today).days
+        if days > WINDOW:
+            continue
+        if days <= 0:
+            stage = "Negotiation"
+        elif days <= 30:
+            stage = "Quote sent"
+        elif days <= 90:
+            stage = "Qualified"
+        else:
+            stage = "New Leads"
+        product = (r["software"] or "Contract") + " renewal"
+        company = r["company_name"]
+        value = r["value"] or 0
+        owner = r["assigned_to"]
+        ecd = exp.isoformat()
+        nowiso = today.isoformat()
+        existing = c.execute(
+            "SELECT id FROM pipeline_deals WHERE client_id=? AND product=? AND lead_source='Renewal'",
+            (r["client_id"], product)
+        ).fetchone()
+        if existing:
+            c.execute(
+                "UPDATE pipeline_deals SET value=?, stage=?, expected_close_date=?, owner=?, company=? WHERE id=?",
+                (value, stage, ecd, owner, company, existing["id"])
+            )
+        else:
+            c.execute(
+                "INSERT INTO pipeline_deals (company,client_id,value,stage,owner,next_action,next_action_date,lead_source,product,stage_updated_at,created_at,status,expected_close_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (company, r["client_id"], value, stage, owner, "Reach out about renewal", nowiso, "Renewal", product, nowiso, nowiso, "open", ecd)
+            )
+            made += 1
+    return made
+
 def import_file(filepath):
     """Import CSV or Excel file into database"""
-    
-    # Read file
     if filepath.endswith('.csv'):
         df = pd.read_csv(filepath)
     else:
         df = pd.read_excel(filepath)
-    
+
     columns = list(df.columns)
     sample_rows = df.head(3).to_dict('records')
-    
+
     print(f"Found columns: {columns}")
     print("Asking AI to map columns...")
-    
-    # Get AI mapping
     mapping = ai_map_columns(columns, sample_rows)
     print(f"AI mapping: {mapping}")
-    
-    # Initialize db
+
     init_db()
     conn = get_db()
     c = conn.cursor()
-    
+    harden_schema(c)
+
     imported = 0
-    
+    contacts_added = 0
+
     for _, row in df.iterrows():
-        # Extract mapped fields
         data = {}
         extra = {}
-        
         for col, field in mapping.items():
             if col in row and field != "ignore":
                 data[field] = row[col]
@@ -120,95 +179,62 @@ def import_file(filepath):
                 pass
             elif col in row:
                 extra[col] = row[col]
-        
-        # Insert client
+
         company = data.get("company_name", "Unknown")
-        
-        # Check if client already exists
+
         c.execute("SELECT id FROM clients WHERE company_name = ?", (company,))
         existing = c.fetchone()
-        
         if existing:
             client_id = existing[0]
         else:
-            c.execute("""
-                INSERT INTO clients (company_name, industry, country)
-                VALUES (?, ?, ?)
-            """, (
-                company,
-                data.get("industry"),
-                data.get("country")
-            ))
+            c.execute("INSERT INTO clients (company_name, industry, country) VALUES (?, ?, ?)",
+                      (company, data.get("industry"), data.get("country")))
             client_id = c.lastrowid
-        
-        # Insert contact if we have one
+
+        # Contact -> client_contacts (the table the UI reads), de-duped by name
         if data.get("contact_name"):
-            c.execute("""
-                INSERT INTO contacts (client_id, name, role, email, phone, is_primary)
-                VALUES (?, ?, ?, ?, ?, 1)
-            """, (
-                client_id,
-                data.get("contact_name"),
-                data.get("contact_role"),
-                data.get("contact_email"),
-                data.get("contact_phone")
-            ))
-        
-        # Insert or update contract
+            nm = data.get("contact_name")
+            ex_contact = c.execute("SELECT id FROM client_contacts WHERE client_id=? AND name=?", (client_id, nm)).fetchone()
+            if not ex_contact:
+                c.execute(
+                    "INSERT INTO client_contacts (client_id,name,title,email,phone,is_primary,created_at) VALUES (?,?,?,?,?,1,?)",
+                    (client_id, nm, data.get("contact_role"), data.get("contact_email"), data.get("contact_phone"), date.today().isoformat())
+                )
+                contacts_added += 1
+
+        # Contract (insert or update by client + software)
         if data.get("expiry_date") or data.get("software"):
-            c.execute("SELECT id FROM contracts WHERE client_id = ? AND software = ?", 
-                     (client_id, data.get("software")))
+            c.execute("SELECT id FROM contracts WHERE client_id = ? AND software = ?", (client_id, data.get("software")))
             existing_contract = c.fetchone()
-            
             if existing_contract:
-                c.execute("""
-                    UPDATE contracts SET vendor=?, start_date=?, expiry_date=?, 
-                    value=?, assigned_to=?, status=?, last_contact=? WHERE id=?
-                """, (
-                    data.get("vendor"),
-                    data.get("start_date"),
-                    data.get("expiry_date"),
-                    data.get("contract_value"),
-                    data.get("assigned_to"),
-                    data.get("status", "active"),
-                    data.get("last_contact"),
-                    existing_contract[0]
-                ))
+                c.execute("""UPDATE contracts SET vendor=?, start_date=?, expiry_date=?,
+                    value=?, assigned_to=?, status=?, last_contact=? WHERE id=?""",
+                    (data.get("vendor"), data.get("start_date"), data.get("expiry_date"),
+                     data.get("contract_value"), data.get("assigned_to"), data.get("status", "active"),
+                     data.get("last_contact"), existing_contract[0]))
             else:
-                c.execute("""
-                    INSERT INTO contracts (client_id, software, vendor, start_date, expiry_date, value, assigned_to, status, last_contact)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    client_id,
-                    data.get("software"),
-                    data.get("vendor"),
-                    data.get("start_date"),
-                    data.get("expiry_date"),
-                    data.get("contract_value"),
-                    data.get("assigned_to"),
-                    data.get("status", "active"),
-                    data.get("last_contact")
-                ))
-        
-        # Store extra fields
+                c.execute("""INSERT INTO contracts (client_id, software, vendor, start_date, expiry_date, value, assigned_to, status, last_contact)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (client_id, data.get("software"), data.get("vendor"), data.get("start_date"),
+                     data.get("expiry_date"), data.get("contract_value"), data.get("assigned_to"),
+                     data.get("status", "active"), data.get("last_contact")))
+
         for field_name, field_value in extra.items():
-            c.execute("""
-                INSERT INTO extra_fields (client_id, field_name, field_value)
-                VALUES (?, ?, ?)
-            """, (client_id, field_name, str(field_value)))
-        
+            c.execute("INSERT INTO extra_fields (client_id, field_name, field_value) VALUES (?, ?, ?)",
+                      (client_id, field_name, str(field_value)))
+
         imported += 1
-    
+
+    renewals = generate_renewal_deals(c)
     conn.commit()
     conn.close()
-    
-    print(f"✅ Imported {imported} records successfully!")
-    return {"imported": imported, "mapping": mapping}
+
+    print(f"✅ Imported {imported} rows | contacts: {contacts_added} | renewal deals: {renewals}")
+    return {"imported": imported, "contacts": contacts_added, "renewals": renewals, "mapping": mapping}
 
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
-        result = import_file(sys.argv[1])
-        print(result)
+        print(import_file(sys.argv[1]))
     else:
         print("Usage: python3 importer.py <filepath>")
