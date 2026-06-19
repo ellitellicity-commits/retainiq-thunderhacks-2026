@@ -7,7 +7,7 @@
 
 # RetainIQ
 
-### ↳ **Know who's leaving. Reach them first.**
+### **Know who's leaving. Reach them first.**
 
 [![Live Demo](https://img.shields.io/badge/Demo-Live_Preview-00e5ff?style=flat-square&logo=vercel&logoColor=white)](https://retainiq-thunderhacks-2026.vercel.app)
 [![GitHub](https://img.shields.io/badge/Code-Repository-f59e0b?style=flat-square&logo=github&logoColor=white)](https://github.com/ellitellicity-commits/retainiq-thunderhacks-2026)
