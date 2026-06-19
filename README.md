@@ -2,7 +2,7 @@
 
 <img src="https://img.shields.io/badge/ThunderHacks_2026-Algoma_University-00e5ff?style=for-the-badge&labelColor=0a0f1e" />
 <img src="https://img.shields.io/badge/Digital_Move-Gold_Sponsor_Challenge-f59e0b?style=for-the-badge&labelColor=0a0f1e" />
-<img src="./assets/retainiq-banner.svg" width="600" />
+ <h1>RetainIQ</h1>
 <strong>Know who's leaving. Reach them first.</strong>
 <br /><br />
 
