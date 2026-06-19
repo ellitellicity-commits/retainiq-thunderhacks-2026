@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 function getSteps(customer) {
   const score = customer.churn_risk_score;
-  const first = customer.client_name?.split(" ")[0] || "Client";
+  const first = customer.company_name?.split(" ")[0] || "Client";
   const daysUntilExpiry = customer.days_until_expiry;
 
   return [
@@ -62,16 +62,16 @@ function ClientCard({ customer, step }) {
       <motion.div
         animate={{ borderColor: step.statusColor, background: `${step.statusColor}18` }}
         transition={{ duration: 0.6 }}
-        style={{ width: 64, height: 64, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontFamily: "Space Mono", fontWeight: 700, color: step.statusColor, margin: "0 auto 16px", border: "2px solid" }}
+        style={{ width: 64, height: 64, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontFamily: "Inter", fontWeight: 700, color: step.statusColor, margin: "0 auto 16px", border: "2px solid" }}
       >
-        {customer.client_name?.split(" ").map(n => n[0]).join("").slice(0, 2) || "?"}
+        {customer.company_name?.split(" ").map(n => n[0]).join("").slice(0, 2) || "?"}
       </motion.div>
 
-      <div style={{ fontFamily: "Space Mono", fontSize: 13, fontWeight: 700, textAlign: "center", color: "#e8f0fe", marginBottom: 4 }}>{customer.client_name}</div>
-      <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", textAlign: "center", letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>
+      <div style={{ fontFamily: "Inter", fontSize: 13, fontWeight: 700, textAlign: "center", color: "#e8f0fe", marginBottom: 4 }}>{customer.company_name}</div>
+      <div style={{ fontFamily: "Inter", fontSize: 10, color: "#3d5070", textAlign: "center", letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>
         {customer.vendor}
       </div>
-      <div style={{ fontFamily: "Space Mono", fontSize: 9, color: "#3d5070", textAlign: "center", marginBottom: 20 }}>
+      <div style={{ fontFamily: "Inter", fontSize: 9, color: "#3d5070", textAlign: "center", marginBottom: 20 }}>
         {customer.software}
       </div>
 
@@ -81,7 +81,7 @@ function ClientCard({ customer, step }) {
         { label: "Contract Health", value: step.contractHealth },
       ].map(s => (
         <div key={s.label} style={{ marginBottom: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "Space Mono", fontSize: 9, color: "#3d5070", textTransform: "uppercase", letterSpacing: 1, marginBottom: 5 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "Inter", fontSize: 9, color: "#3d5070", textTransform: "uppercase", letterSpacing: 1, marginBottom: 5 }}>
             <span>{s.label}</span>
             <motion.span animate={{ color: step.statusColor }} transition={{ duration: 0.6 }}>{s.value}%</motion.span>
           </div>
@@ -94,7 +94,7 @@ function ClientCard({ customer, step }) {
       <motion.div
         animate={{ background: `${step.statusColor}18`, color: step.statusColor, borderColor: `${step.statusColor}40` }}
         transition={{ duration: 0.6 }}
-        style={{ marginTop: 16, padding: "8px 14px", borderRadius: 8, fontFamily: "Space Mono", fontSize: 11, fontWeight: 700, textAlign: "center", letterSpacing: 2, textTransform: "uppercase", border: "1px solid" }}
+        style={{ marginTop: 16, padding: "8px 14px", borderRadius: 8, fontFamily: "Inter", fontSize: 11, fontWeight: 700, textAlign: "center", letterSpacing: 2, textTransform: "uppercase", border: "1px solid" }}
       >
         {step.status}
       </motion.div>
@@ -106,15 +106,15 @@ function ClientCard({ customer, step }) {
             animate={{ opacity: 1, height: "auto", marginTop: 10 }}
             exit={{ opacity: 0, height: 0, marginTop: 0 }}
             transition={{ duration: 0.4 }}
-            style={{ padding: "8px 12px", borderRadius: 8, fontSize: 10, fontWeight: 600, textAlign: "center", background: "rgba(239,68,68,0.12)", color: "#f87171", border: "1px solid rgba(239,68,68,0.25)", fontFamily: "Space Mono", letterSpacing: 0.5 }}
+            style={{ padding: "8px 12px", borderRadius: 8, fontSize: 10, fontWeight: 600, textAlign: "center", background: "rgba(239,68,68,0.12)", color: "#f87171", border: "1px solid rgba(239,68,68,0.25)", fontFamily: "Inter", letterSpacing: 0.5 }}
           >
             {step.alert}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div style={{ marginTop: 14, textAlign: "center", fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", letterSpacing: 1 }}>RISK SCORE</div>
-      <motion.div animate={{ color: step.statusColor }} transition={{ duration: 0.6 }} style={{ fontFamily: "Space Mono", fontSize: 32, fontWeight: 700, textAlign: "center", letterSpacing: -1 }}>
+      <div style={{ marginTop: 14, textAlign: "center", fontFamily: "Inter", fontSize: 10, color: "#3d5070", letterSpacing: 1 }}>RISK SCORE</div>
+      <motion.div animate={{ color: step.statusColor }} transition={{ duration: 0.6 }} style={{ fontFamily: "Inter", fontSize: 32, fontWeight: 700, textAlign: "center", letterSpacing: -1 }}>
         {String(step.riskScore).padStart(2, "0")}
         <span style={{ fontSize: 14, fontWeight: 400, color: "#3d5070" }}>/100</span>
       </motion.div>
@@ -130,7 +130,7 @@ export default function Lifecycle({ API }) {
   const pillsRef = useRef(null);
 
   useEffect(() => {
-    fetch(`${API}/api/customers?sort=churn_risk_score&order=desc`).then(r => r.json()).then(setCustomers);
+    fetch(`${API}/api/db/clients`).then(r => r.json()).then(setCustomers);
   }, [API]);
 
   useEffect(() => { setActiveStep(0); }, [currentIndex]);
@@ -143,7 +143,7 @@ export default function Lifecycle({ API }) {
   }, [currentIndex]);
 
   if (!customers.length) return (
-    <div style={{ color: "#3d5070", fontFamily: "Space Mono", fontSize: 13, paddingTop: 60, textAlign: "center" }}>LOADING CLIENTS...</div>
+    <div style={{ color: "#3d5070", fontFamily: "Inter", fontSize: 13, paddingTop: 60, textAlign: "center" }}>LOADING CLIENTS...</div>
   );
 
   const customer = customers[currentIndex];
@@ -157,7 +157,7 @@ export default function Lifecycle({ API }) {
   return (
     <div>
       <div style={{ marginBottom: 22 }}>
-        <div style={{ fontFamily: "Space Mono", fontSize: 22, fontWeight: 700, color: "#e8f0fe", letterSpacing: -0.3 }}>
+        <div style={{ fontFamily: "Inter", fontSize: 22, fontWeight: 700, color: "#e8f0fe", letterSpacing: -0.3 }}>
           Client <span style={{ color: "#00e5ff", textShadow: "0 0 14px rgba(0,229,255,0.5)" }}>Lifecycle</span>
         </div>
         <div style={{ color: "#3d5070", fontSize: 12.5, marginTop: 5 }}>
@@ -171,15 +171,15 @@ export default function Lifecycle({ API }) {
 
         <div ref={pillsRef} style={{ flex: 1, display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none" }}>
           {customers.map((c, i) => (
-            <motion.button key={c.id} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} onClick={() => goTo(i)} style={{ padding: "7px 16px", borderRadius: 999, border: `1px solid ${currentIndex === i ? riskColor(c.churn_risk_score) : "rgba(0,229,255,0.1)"}`, background: currentIndex === i ? `${riskColor(c.churn_risk_score)}18` : "transparent", color: currentIndex === i ? riskColor(c.churn_risk_score) : "#3d5070", fontFamily: "Space Mono", fontSize: 10, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, letterSpacing: 0.5, transition: "all 0.2s ease" }}>
-              {c.client_name?.split(" ")[0] || "Client"}
+            <motion.button key={c.id} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} onClick={() => goTo(i)} style={{ padding: "7px 16px", borderRadius: 999, border: `1px solid ${currentIndex === i ? riskColor(c.churn_risk_score) : "rgba(0,229,255,0.1)"}`, background: currentIndex === i ? `${riskColor(c.churn_risk_score)}18` : "transparent", color: currentIndex === i ? riskColor(c.churn_risk_score) : "#3d5070", fontFamily: "Inter", fontSize: 10, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, letterSpacing: 0.5, transition: "all 0.2s ease" }}>
+              {c.company_name?.split(" ")[0] || "Client"}
             </motion.button>
           ))}
         </div>
 
         <motion.button whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.88 }} onClick={next} style={{ background: "rgba(0,229,255,0.08)", border: "1px solid rgba(0,229,255,0.2)", borderRadius: "50%", width: 38, height: 38, cursor: "pointer", color: "#00e5ff", fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>›</motion.button>
 
-        <div style={{ fontFamily: "Space Mono", fontSize: 11, color: "#3d5070", whiteSpace: "nowrap", flexShrink: 0, minWidth: 48, textAlign: "right" }}>
+        <div style={{ fontFamily: "Inter", fontSize: 11, color: "#3d5070", whiteSpace: "nowrap", flexShrink: 0, minWidth: 48, textAlign: "right" }}>
           {currentIndex + 1}<span style={{ color: "#1e2840" }}>/</span>{customers.length}
         </div>
       </div>
@@ -187,7 +187,7 @@ export default function Lifecycle({ API }) {
       {/* Step buttons */}
       <div style={{ display: "flex", gap: 10, marginBottom: 22 }}>
         {steps.map((s, i) => (
-          <motion.button key={i} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} onClick={() => setActiveStep(i)} style={{ padding: "8px 20px", borderRadius: 999, border: `1px solid ${activeStep === i ? s.statusColor : "rgba(0,229,255,0.12)"}`, background: activeStep === i ? `${s.statusColor}18` : "transparent", color: activeStep === i ? s.statusColor : "#3d5070", fontFamily: "Space Mono", fontSize: 11, fontWeight: 700, cursor: "pointer", letterSpacing: 1, transition: "all 0.2s ease" }}>
+          <motion.button key={i} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} onClick={() => setActiveStep(i)} style={{ padding: "8px 20px", borderRadius: 999, border: `1px solid ${activeStep === i ? s.statusColor : "rgba(0,229,255,0.12)"}`, background: activeStep === i ? `${s.statusColor}18` : "transparent", color: activeStep === i ? s.statusColor : "#3d5070", fontFamily: "Inter", fontSize: 11, fontWeight: 700, cursor: "pointer", letterSpacing: 1, transition: "all 0.2s ease" }}>
             {s.status}
           </motion.button>
         ))}
@@ -206,8 +206,8 @@ export default function Lifecycle({ API }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {steps.map((s, i) => (
             <motion.div key={`${currentIndex}-${i}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: activeStep === i ? 1 : 0.35, y: 0 }} transition={{ duration: 0.35, delay: i * 0.06 }} whileHover={{ x: 5 }} onClick={() => setActiveStep(i)} style={{ background: "#1a2236", border: `1px solid ${activeStep === i ? s.statusColor + "50" : "rgba(0,229,255,0.1)"}`, borderLeft: `3px solid ${s.statusColor}`, borderRadius: 14, padding: 22, cursor: "pointer", minHeight: 160 }}>
-              <div style={{ fontFamily: "Space Mono", fontSize: 10, color: "#3d5070", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>{s.label}</div>
-              <div style={{ fontFamily: "Space Mono", fontSize: 16, fontWeight: 700, color: s.statusColor, marginBottom: 10 }}>{s.title}</div>
+              <div style={{ fontFamily: "Inter", fontSize: 10, color: "#3d5070", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>{s.label}</div>
+              <div style={{ fontFamily: "Inter", fontSize: 16, fontWeight: 700, color: s.statusColor, marginBottom: 10 }}>{s.title}</div>
               <div style={{ fontSize: 13, lineHeight: 1.8, color: "#7a8fb0" }}>{s.body}</div>
               <div style={{ display: "flex", gap: 6, marginTop: 14 }}>
                 {steps.map((st, j) => (
@@ -220,8 +220,8 @@ export default function Lifecycle({ API }) {
           <AnimatePresence>
             {activeStep === 2 && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 14, padding: 22, textAlign: "center" }}>
-                <div style={{ fontFamily: "Space Mono", fontSize: 12, color: "#f87171", fontWeight: 700, marginBottom: 6 }}>
-                  ⚠ {customer.client_name?.split(" ")[0]} needs outreach NOW
+                <div style={{ fontFamily: "Inter", fontSize: 12, color: "#f87171", fontWeight: 700, marginBottom: 6 }}>
+                  ⚠ {customer.company_name?.split(" ")[0]} needs outreach NOW
                 </div>
                 <div style={{ fontSize: 12.5, color: "#7a8fb0", marginBottom: 14 }}>
                   Switch to Alerts tab to generate a renewal email instantly

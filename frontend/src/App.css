@@ -1,33 +1,67 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg:         #0a0f1e;
-  --bg2:        #0d1526;
-  --card:       #1a2236;
-  --card2:      #1e2840;
-  --border:     rgba(0,229,255,0.12);
-  --border2:    rgba(0,229,255,0.28);
-  --cyan:       #00e5ff;
-  --cyan-dim:   rgba(0,229,255,0.06);
-  --amber:      #f59e0b;
-  --red:        #ef4444;
-  --green:      #10b981;
-  --purple:     #8b5cf6;
-  --blue:       #3b82f6;
-  --text:       #e8f0fe;
-  --text2:      #7a8fb0;
-  --text3:      #3d5070;
-  --shadow:     0 4px 24px rgba(0,0,0,0.4);
-  --radius:     12px;
-  --radius-lg:  16px;
+  --bg:          #ece8e0;
+  --bg2:         #ece8e0;
+  --card:        #faf8f2;
+  --card2:       #e7e3d9;
+  --sidebar:     #e6e2d8;
+  --hover:       #e8e4da;
+  --hover2:      #dedacf;
+  --border:      #ddd8cc;
+  --border2:     #ccc7b9;
+  --cyan:        #0f6e56;
+  --cyan-dim:    rgba(15,110,86,0.10);
+  --brand-bright:#0f6e56;
+  --logo-text:   #2a2a28;
+  --amber:       #b8740f;
+  --red:         #c0392b;
+  --danger-soft: #b5483f;
+  --green:       #14735d;
+  --purple:      #7c3aed;
+  --blue:        #2563eb;
+  --text:        #2a2a28;
+  --text2:       #57534a;
+  --text3:       #827d6f;
+  --shadow:      0 1px 3px rgba(0,0,0,0.07);
+  --radius:      12px;
+  --radius-lg:   16px;
+}
+
+[data-theme="dark"] {
+  --bg:          #30302e;
+  --bg2:         #30302e;
+  --card:        #262624;
+  --card2:       #353532;
+  --sidebar:     #2a2a28;
+  --hover:       #2b2b29;
+  --hover2:      #34342f;
+  --border:      #3a3a36;
+  --border2:     #45433d;
+  --cyan:        #0f6e56;
+  --cyan-dim:    rgba(15,110,86,0.16);
+  --brand-bright:#6FD9B7;
+  --logo-text:   #FAF9F5;
+  --amber:       #c29a38;
+  --red:         #d94c4c;
+  --danger-soft: #e2a0a0;
+  --green:       #1b7361;
+  --purple:      #a78bfa;
+  --blue:        #60a5fa;
+  --text:        #f4f4f2;
+  --text2:       #bfbfbf;
+  --text3:       #8a8a86;
+  --shadow:      0 4px 24px rgba(0,0,0,0.4);
+  --radius:      12px;
+  --radius-lg:   16px;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   overflow: hidden;
 }
 
@@ -47,26 +81,20 @@ body {
 }
 
 .header::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-  opacity: 0.4;
+  content: none;
 }
 
 .header-left { display: flex; align-items: center; gap: 10px; }
 
 .logo-mark {
   width: 32px; height: 32px;
-  background: linear-gradient(135deg, var(--cyan), #0080ff);
+  background: var(--cyan);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
-  box-shadow: 0 0 16px rgba(0,229,255,0.4);
-  animation: logo-pulse 3s ease-in-out infinite;
+  color: #fff;
 }
 
 @keyframes logo-pulse {
@@ -75,12 +103,11 @@ body {
 }
 
 .logo-text {
-  font-family: 'Space Mono', monospace;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--cyan);
-  letter-spacing: 1.5px;
-  text-shadow: 0 0 12px rgba(0,229,255,0.5);
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #FAF9F5;
+  letter-spacing: 0.2px;
 }
 
 .logo-sub {
@@ -88,7 +115,7 @@ body {
   color: var(--text3);
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
 }
 
 .header-right { display: flex; align-items: center; gap: 12px; }
@@ -104,7 +131,7 @@ body {
   border: 1px solid rgba(16,185,129,0.2);
   padding: 5px 12px;
   border-radius: 999px;
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   letter-spacing: 0.5px;
 }
 
@@ -122,7 +149,7 @@ body {
 }
 
 .header-time {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   color: var(--text2);
   padding: 5px 12px;
@@ -143,7 +170,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 6px 14px 6px 34px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--text);
   outline: none;
@@ -152,7 +179,7 @@ body {
 }
 
 .search-input::placeholder { color: var(--text3); }
-.search-input:focus { border-color: var(--border2); width: 220px; box-shadow: 0 0 0 3px rgba(0,229,255,0.08); }
+.search-input:focus { border-color: var(--border2); width: 220px; box-shadow: 0 0 0 3px rgba(13,148,136,0.12); }
 
 .search-icon {
   position: absolute;
@@ -181,9 +208,9 @@ body {
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  color: var(--text3);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13.5px;
+  color: #C6C4B9;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -209,11 +236,10 @@ body {
   background: var(--red);
   color: white;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 1px 6px;
   border-radius: 999px;
-  font-family: 'Space Mono', monospace;
-  animation: pulse-badge 2s infinite;
+  font-family: 'Inter', sans-serif;
 }
 
 @keyframes pulse-badge {
@@ -226,9 +252,6 @@ body {
   flex: 1;
   overflow-y: auto;
   background: var(--bg);
-  background-image:
-    radial-gradient(ellipse at 15% 10%, rgba(0,229,255,0.04) 0%, transparent 55%),
-    radial-gradient(ellipse at 85% 90%, rgba(139,92,246,0.04) 0%, transparent 55%);
 }
 
 .main::-webkit-scrollbar { width: 3px; }
@@ -243,22 +266,22 @@ body {
 }
 
 @keyframes pageEnter {
-  from { opacity:0; transform:translateY(18px); filter:blur(4px); }
-  to   { opacity:1; transform:translateY(0);    filter:blur(0); }
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
 }
 
 /* ── PAGE HEADER ── */
 .page-header { margin-bottom: 26px; }
 
 .page-title {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 22px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.3px;
 }
 
-.page-title span { color: var(--cyan); text-shadow: 0 0 14px rgba(0,229,255,0.5); }
+.page-title span { color: var(--cyan); }
 .page-sub { color: var(--text3); font-size: 12.5px; margin-top: 5px; }
 
 /* ── PROGRESS BAR ── */
@@ -267,7 +290,7 @@ body {
 .progress-label {
   display: flex;
   justify-content: space-between;
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   color: var(--text3);
   margin-bottom: 6px;
@@ -324,7 +347,7 @@ body {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   border: 1px solid;
   transition: all 0.2s ease;
   cursor: default;
@@ -376,7 +399,7 @@ body {
 .stat-icon { font-size: 28px; margin-bottom: 12px; display: block; }
 
 .stat-label {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
@@ -385,7 +408,7 @@ body {
 }
 
 .stat-value {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 34px;
   font-weight: 700;
   color: var(--accent-color, var(--cyan));
@@ -394,7 +417,7 @@ body {
   text-shadow: 0 0 20px var(--accent-color, rgba(0,229,255,0.4));
 }
 
-.stat-sub { font-size: 11.5px; color: var(--text3); margin-top: 8px; font-family: 'Space Mono', monospace; }
+.stat-sub { font-size: 11.5px; color: var(--text3); margin-top: 8px; font-family: 'Inter', sans-serif; }
 
 /* ── CARDS ── */
 .card {
@@ -412,7 +435,7 @@ body {
 .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 
 .section-title {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   font-weight: 700;
   color: var(--text2);
@@ -428,7 +451,7 @@ body {
   padding: 9px 18px;
   border: none;
   border-radius: 9px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -489,7 +512,7 @@ body {
   border-radius: 5px;
   font-size: 11px;
   font-weight: 700;
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
 }
 
 .risk-high   { background: rgba(239,68,68,0.12);  color: #f87171; border: 1px solid rgba(239,68,68,0.22); }
@@ -505,7 +528,7 @@ body {
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
 }
 
 .plan-Enterprise { background: rgba(139,92,246,0.12); color: #a78bfa; border: 1px solid rgba(139,92,246,0.22); }
@@ -518,7 +541,7 @@ body {
 .data-table th {
   padding: 10px 16px;
   text-align: left;
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
@@ -529,7 +552,7 @@ body {
 
 .data-table td {
   padding: 13px 16px;
-  font-size: 13.5px;
+  font-size: 15px;
   border-bottom: 1px solid rgba(0,229,255,0.05);
   color: var(--text);
   transition: background 0.15s ease;
@@ -546,7 +569,7 @@ body {
 .score-bar-wrap { display: flex; align-items: center; gap: 10px; }
 .score-bar-bg { flex: 1; height: 3px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
 .score-bar-fill { height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
-.score-num { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; min-width: 36px; text-align: right; }
+.score-num { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; min-width: 36px; text-align: right; }
 
 /* ── ALERT CARD ── */
 .alert-card {
@@ -598,7 +621,7 @@ body {
 .terminal-dot-green  { width: 12px; height: 12px; border-radius: 50%; background: #28c840; }
 
 .terminal-title {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   color: rgba(0,229,255,0.4);
   margin-left: 8px;
@@ -608,7 +631,7 @@ body {
 .terminal-body {
   flex: 1;
   padding: 18px 20px;
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   line-height: 1.9;
   color: var(--cyan);
@@ -756,7 +779,7 @@ body {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-family: 'Space Mono', monospace !important;
+  font-family: 'Inter', sans-serif !important;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 2px;
@@ -814,7 +837,7 @@ body {
 }
 
 .story-step-num {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -823,7 +846,7 @@ body {
 }
 
 .story-step-title {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 20px;
   font-weight: 700;
   margin-bottom: 12px;
@@ -859,7 +882,7 @@ body {
 }
 
 .user-card-name {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 700;
   text-align: center;
@@ -870,7 +893,7 @@ body {
   font-size: 11px;
   color: var(--text3);
   text-align: center;
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   letter-spacing: 1px;
   text-transform: uppercase;
   margin-bottom: 20px;
@@ -883,7 +906,7 @@ body {
 }
 
 .user-card-stat-label {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
@@ -908,7 +931,7 @@ body {
   margin-top: 16px;
   padding: 8px 14px;
   border-radius: 8px;
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   font-weight: 700;
   text-align: center;
@@ -928,7 +951,7 @@ body {
   color: #f87171;
   border: 1px solid rgba(239,68,68,0.25);
   animation: pulse-badge 1.5s infinite;
-  font-family: 'Space Mono', monospace;
+  font-family: 'Inter', sans-serif;
 }
 
 .app {

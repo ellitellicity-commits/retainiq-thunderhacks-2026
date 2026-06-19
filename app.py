@@ -3,8 +3,18 @@ import random
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from model import load_and_train, get_dataframe, score_new_customer, _assign_stage
+from database import get_db, init_db
 
 app = Flask(__name__)
+from contacts_api import contacts_bp
+app.register_blueprint(contacts_bp)
+from quotes_api import quotes_bp
+app.register_blueprint(quotes_bp)
+
+
+from deals_api import deals_bp
+app.register_blueprint(deals_bp)
+
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -405,8 +415,173 @@ def reset_data():
     ensure_model_loaded()
     return jsonify({"success": True})
 
+@app.route("/api/db/clients")
+def get_db_clients():
+    from datetime import datetime
+    conn = get_db()
+    c = conn.cursor()
+    
+    today = datetime.today()
+    
+    c.execute("""
+        SELECT 
+            cl.id,
+            cl.company_name,
+            cl.industry,
+            cl.country,
+            co.software,
+            co.vendor,
+            co.start_date,
+            co.expiry_date,
+            co.value as contract_value,
+            co.assigned_to,
+            co.status,
+            co.last_contact as lc
+        FROM clients cl
+        LEFT JOIN contracts co ON cl.id = co.client_id
+        ORDER BY co.expiry_date ASC
+    """)
+    
+    rows = c.fetchall()
+    conn.close()
+    
+    clients = []
+    for row in rows:
+        row = dict(row)
+        row['client_name'] = row.get('company_name')
+        row['contract_start'] = row.get('start_date')
+        row['contract_expiry'] = row.get('expiry_date')
+        row['account_manager'] = row.get('assigned_to')
+        row['last_contact'] = row.get('lc')
+        if row.get('last_contact'):
+            try:
+                last = datetime.strptime(row['last_contact'], '%Y-%m-%d')
+                row['days_since_contact'] = (today - last).days
+            except:
+                row['days_since_contact'] = None
+        else:
+            row['days_since_contact'] = None
+
+        if row['expiry_date']:
+            try:
+                expiry = datetime.strptime(row['expiry_date'], '%Y-%m-%d')
+                days_until_expiry = (expiry - today).days
+                row['days_until_expiry'] = days_until_expiry
+                
+                # Risk score
+                if days_until_expiry < 0:
+                    score = 80
+                    stage = "Expired"
+                elif days_until_expiry <= 30:
+                    score = 70
+                    stage = "Critical"
+                elif days_until_expiry <= 90:
+                    score = 50
+                    stage = "At-Risk"
+                else:
+                    score = 20
+                    stage = "Active"
+                    
+                row['churn_risk_score'] = score
+                row['journey_stage'] = stage
+            except:
+                row['days_until_expiry'] = None
+                row['churn_risk_score'] = 0
+                row['journey_stage'] = "Unknown"
+        
+        clients.append(row)
+    
+    return jsonify(clients)
+
+
+@app.route("/api/db/stats")
+def get_db_stats():
+    from datetime import datetime
+    conn = get_db()
+    c = conn.cursor()
+    today = datetime.today()
+    
+    c.execute("SELECT COUNT(*) as total FROM clients")
+    total = c.fetchone()['total']
+    
+    c.execute("SELECT COUNT(*) as total, SUM(value) as total_value FROM contracts")
+    contracts = c.fetchone()
+    
+    c.execute("SELECT expiry_date, value FROM contracts WHERE expiry_date IS NOT NULL")
+    all_contracts = c.fetchall()
+    
+    expired = critical = at_risk = active = 0
+    value_at_risk = 0
+    expiring_30 = 0
+    expiring_90 = 0
+    
+    for contract in all_contracts:
+        try:
+            expiry = datetime.strptime(contract['expiry_date'], '%Y-%m-%d')
+            days = (expiry - today).days
+            val = contract['value'] or 0
+            
+            if days < 0:
+                expired += 1
+                value_at_risk += val
+            elif days <= 30:
+                critical += 1
+                expiring_30 += 1
+                expiring_90 += 1
+                value_at_risk += val
+            elif days <= 90:
+                at_risk += 1
+                expiring_90 += 1
+                value_at_risk += val
+            else:
+                active += 1
+        except:
+            pass
+    
+    conn.close()
+    
+    return jsonify({
+        "total_customers": total,
+        "high_risk_count": expired + critical,
+        "medium_risk_count": at_risk,
+        "low_risk_count": active,
+        "expiring_30": expiring_30,
+        "expiring_90": expiring_90,
+        "total_value_at_risk": value_at_risk,
+        "by_stage": {
+            "Expired": expired,
+            "Critical": critical,
+            "At-Risk": at_risk,
+            "Active": active
+        }
+    })
+
+
+@app.route("/api/db/import", methods=["POST"])
+def import_data():
+    if "file" not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    
+    file = request.files["file"]
+    if not file.filename.endswith(('.csv', '.xlsx', '.xls')):
+        return jsonify({"error": "File must be CSV or Excel"}), 400
+    
+    try:
+        import tempfile
+        from importer import import_file
+        
+        # Save to temp file
+        suffix = '.csv' if file.filename.endswith('.csv') else '.xlsx'
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            file.save(tmp.name)
+            result = import_file(tmp.name)
+        
+        os.unlink(tmp.name)
+        return jsonify({"success": True, "imported": result['imported'], "mapping": result['mapping']})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
-
-
