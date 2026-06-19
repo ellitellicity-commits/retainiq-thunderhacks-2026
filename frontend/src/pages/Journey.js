@@ -48,7 +48,10 @@ export default function Pipeline({ API }) {
   const [quoteMsg, setQuoteMsg] = useState("");
 
   const load = () => fetch(`${API}/api/db/deals`).then(r => r.json()).then(setDeals).catch(() => setDeals([]));
-  useEffect(() => { load(); }, [API]);
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [API]);
 
   const openValue = deals.filter(d => d.status === "open").reduce((s, d) => s + (d.value || 0), 0);
 

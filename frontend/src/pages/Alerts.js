@@ -4,7 +4,6 @@ const PROB = { "New Leads": 0.10, "Qualified": 0.25, "Demo": 0.40, "Quote sent":
 const OPEN_STAGES = ["New Leads", "Qualified", "Demo", "Quote sent", "Negotiation"];
 
 const fmtBig = (v) => { v = Number(v || 0); return v >= 1e6 ? "$" + (v / 1e6).toFixed(2) + "M" : "$" + Math.round(v / 1e3) + "K"; };
-const initials = (name) => { if (!name) return "—"; const p = name.trim().split(/\s+/); return ((p[0] ? p[0][0] : "") + (p[1] ? p[1][0] : "")).toUpperCase() || "—"; };
 
 const card = { background: "var(--card)", border: "1px solid var(--border2)", borderRadius: 12, padding: "16px 18px" };
 const cardTitle = { fontSize: 14, fontWeight: 600, color: "var(--text)", marginBottom: 16 };

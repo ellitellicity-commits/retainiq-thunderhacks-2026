@@ -82,7 +82,7 @@ export default function Clients({ API }) {
 
   const parseNum = (x) => {
     if (x === null || x === undefined || x === "") return null;
-    const n = Number(String(x).replace(/[^0-9.\-]/g, ""));
+    const n = Number(String(x).replace(/[^0-9.-]/g, ""));
     return isNaN(n) ? null : n;
   };
   const min = parseNum(minValue);

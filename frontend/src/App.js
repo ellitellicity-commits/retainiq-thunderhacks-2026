@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
 import Upload from "./pages/Upload";
 import Customers from "./pages/Customers";
 import Contacts from "./pages/Contacts";
@@ -24,7 +23,6 @@ const MOON = (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke
 
 export default function App() {
   const [page, setPage] = useState("dashboard");
-  const [loggedIn, setLoggedIn] = useState(false);
   const [uploaded, setUploaded] = useState(true);
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem("riq_sidebar_collapsed") === "1"; } catch (e) { return false; }
