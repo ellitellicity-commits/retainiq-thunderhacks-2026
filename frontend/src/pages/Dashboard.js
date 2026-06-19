@@ -57,13 +57,13 @@ export default function Dashboard({ API }) {
     <div>
       <div style={{ marginBottom: 26 }}>
         <div style={{ fontFamily: "Inter", fontSize: 32, fontWeight: 600, color: "var(--text)", letterSpacing: -0.5 }}>Dashboard</div>
-        <div style={{ color: "#C3C1B6", fontSize: 15, marginTop: 6 }}>Contract renewal overview · Digital Move IT &amp; Telecom</div>
+        <div style={{ color: "var(--text2)", fontSize: 15, marginTop: 6 }}>Contract renewal overview · Digital Move IT &amp; Telecom</div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 26 }}>
         {cards.map((c, i) => (
           <motion.div key={c.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-            style={{ background: "#262624", border: "1px solid #45433d", borderRadius: 14, padding: "22px 24px", boxShadow: "0 2px 14px rgba(0,0,0,0.38)" }}>
+            style={{ background: "var(--card)", border: "1px solid var(--border2)", borderRadius: 14, padding: "22px 24px", boxShadow: "0 2px 14px rgba(0,0,0,0.38)" }}>
             <div style={{ fontSize: 18, color: "var(--text2)", marginBottom: 12 }}>{c.label}</div>
             <div style={{ fontSize: 40, fontWeight: 600, color: c.color, letterSpacing: -0.6 }}>{c.value}</div>
           </motion.div>
@@ -87,7 +87,7 @@ export default function Dashboard({ API }) {
       <div style={{ border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Inter", fontSize: 16 }}>
           <thead>
-            <tr style={{ background: "#262624" }}>
+            <tr style={{ background: "var(--card)" }}>
               <th style={th}>Client</th>
               <th style={th}>Software</th>
               <th style={{ ...th, textAlign: "right" }}>Value</th>

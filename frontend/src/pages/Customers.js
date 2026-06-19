@@ -28,10 +28,10 @@ const td = { padding: "14px 16px", color: "var(--text)", fontSize: 15 };
 
 const ctrl = {
   padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)",
-  background: "#262624", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none",
+  background: "var(--card)", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none",
 };
 
-const cfield = { width: "100%", padding: "8px 11px", borderRadius: 8, border: "1px solid var(--border)", background: "#30302e", color: "var(--text)", fontFamily: "Inter", fontSize: 13.5, outline: "none", boxSizing: "border-box", marginBottom: 8 };
+const cfield = { width: "100%", padding: "8px 11px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontFamily: "Inter", fontSize: 13.5, outline: "none", boxSizing: "border-box", marginBottom: 8 };
 const iconBtn = { background: "transparent", border: "1px solid var(--border2)", color: "var(--text3)", fontFamily: "Inter", fontSize: 12.5, padding: "4px 10px", borderRadius: 7, cursor: "pointer" };
 
 export default function Clients({ API }) {
@@ -228,7 +228,7 @@ export default function Clients({ API }) {
   const pill = { padding: "7px 16px", borderRadius: 999, fontFamily: "Inter", fontSize: 14, fontWeight: 500, cursor: "pointer" };
 
   const contactFormEl = (
-    <div style={{ border: "1px solid var(--border2)", borderRadius: 10, padding: "12px 13px", marginBottom: 8, background: "#2b2b29" }}>
+    <div style={{ border: "1px solid var(--border2)", borderRadius: 10, padding: "12px 13px", marginBottom: 8, background: "var(--hover)" }}>
       <input style={cfield} placeholder="Name" value={contactForm ? contactForm.name : ""} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })} />
       <input style={cfield} placeholder="Title (e.g. IT Director)" value={contactForm ? contactForm.title : ""} onChange={(e) => setContactForm({ ...contactForm, title: e.target.value })} />
       <input style={cfield} placeholder="Email" value={contactForm ? contactForm.email : ""} onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })} />
@@ -256,7 +256,7 @@ export default function Clients({ API }) {
         initial={{ x: 480 }} animate={{ x: 0 }} transition={{ type: "tween", duration: 0.25 }}
         style={{
           position: "fixed", top: 0, right: 0, height: "100vh", width: 560, maxWidth: "92vw",
-          background: "#262624", borderLeft: "1px solid var(--border2)", zIndex: 9999,
+          background: "var(--card)", borderLeft: "1px solid var(--border2)", zIndex: 9999,
           overflowY: "auto", fontFamily: "Inter", boxShadow: "-8px 0 30px rgba(0,0,0,0.5)",
         }}>
         <div style={{ padding: "24px 34px" }}>
@@ -313,7 +313,7 @@ export default function Clients({ API }) {
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 14.5, fontWeight: 600, color: "var(--text)" }}>
                         {ct.name}
-                        {ct.is_primary ? <span style={{ marginLeft: 8, fontSize: 11, color: "#9FE1CB", background: "rgba(15,110,86,.22)", padding: "1px 7px", borderRadius: 5 }}>Primary</span> : null}
+                        {ct.is_primary ? <span style={{ marginLeft: 8, fontSize: 11, color: "var(--brand-bright)", background: "rgba(15,110,86,.22)", padding: "1px 7px", borderRadius: 5 }}>Primary</span> : null}
                       </div>
                       {ct.title ? <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 2 }}>{ct.title}</div> : null}
                       {ct.email ? <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 2 }}>{ct.email}</div> : null}
@@ -368,7 +368,7 @@ export default function Clients({ API }) {
               <div style={{ marginBottom: 12 }}>
                 <div style={{ fontSize: 12.5, color: "var(--text3)", marginBottom: 4 }}>Send to</div>
                 <select value={selectedContactId} onChange={(e) => setSelectedContactId(e.target.value)}
-                  style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "#30302e", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none", cursor: "pointer", boxSizing: "border-box" }}>
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none", cursor: "pointer", boxSizing: "border-box" }}>
                   <option value="">No specific recipient</option>
                   {contacts.map(c => <option key={c.id} value={String(c.id)}>{c.name}{c.title ? " — " + c.title : ""}</option>)}
                 </select>
@@ -389,11 +389,11 @@ export default function Clients({ API }) {
                 <div style={{ fontSize: 12.5, color: "var(--text3)", marginBottom: 4 }}>Subject</div>
                 <input value={email.subject} onChange={(e) => setEmail({ ...email, subject: e.target.value })}
                   style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid var(--border)",
-                    background: "#30302e", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none", marginBottom: 12, boxSizing: "border-box" }} />
+                    background: "var(--bg)", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none", marginBottom: 12, boxSizing: "border-box" }} />
                 <div style={{ fontSize: 12.5, color: "var(--text3)", marginBottom: 4 }}>Body</div>
                 <textarea value={email.body} onChange={(e) => setEmail({ ...email, body: e.target.value })} rows={12}
                   style={{ width: "100%", padding: "11px 13px", borderRadius: 8, border: "1px solid var(--border)",
-                    background: "#30302e", color: "var(--text)", fontFamily: "Inter", fontSize: 14, lineHeight: 1.55, outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+                    background: "var(--bg)", color: "var(--text)", fontFamily: "Inter", fontSize: 14, lineHeight: 1.55, outline: "none", resize: "vertical", boxSizing: "border-box" }} />
                 <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
                   <button onClick={openInMail}
                     style={{ flex: "1 1 auto", padding: "10px 14px", borderRadius: 9, border: "none", background: "var(--cyan)", color: "#fff", fontFamily: "Inter", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Open in email</button>
@@ -416,7 +416,7 @@ export default function Clients({ API }) {
     <div>
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontFamily: "Inter", fontSize: 32, fontWeight: 600, color: "var(--text)", letterSpacing: -0.5 }}>Clients</div>
-        <div style={{ color: "#C3C1B6", fontSize: 15, marginTop: 6 }}>Manage accounts &amp; renewals · Digital Move IT &amp; Telecom</div>
+        <div style={{ color: "var(--text2)", fontSize: 15, marginTop: 6 }}>Manage accounts &amp; renewals · Digital Move IT &amp; Telecom</div>
       </div>
 
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
@@ -467,7 +467,7 @@ export default function Clients({ API }) {
       <div style={{ border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Inter" }}>
           <thead>
-            <tr style={{ background: "#262624" }}>
+            <tr style={{ background: "var(--card)" }}>
               <th style={th}>Client</th>
               <th style={th}>Software</th>
               <th style={{ ...th, textAlign: "right" }}>Value</th>
@@ -482,7 +482,7 @@ export default function Clients({ API }) {
               return (
                 <tr key={c.id} onClick={() => openClient(c)}
                   style={{ borderTop: "1px solid var(--border)", cursor: "pointer" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#2b2b29")}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--hover)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
                   <td style={{ ...td, fontWeight: 600 }}>{nameOf(c)}</td>
                   <td style={{ ...td, color: "var(--text2)" }}>

@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 
 const STAGES = ["New Leads", "Qualified", "Demo", "Quote sent", "Negotiation", "Closed-Won", "Closed-Lost"];
 const STAGE_DOT = {
-  "New Leads": "#8a8a86", "Qualified": "#378add", "Demo": "#7F77DD", "Quote sent": "#EF9F27",
+  "New Leads": "var(--text3)", "Qualified": "#378add", "Demo": "#7F77DD", "Quote sent": "#EF9F27",
   "Negotiation": "#1D9E75", "Closed-Won": "#639922", "Closed-Lost": "#E24B4A",
 };
 const SOURCES = ["Inbound", "Outbound", "Referral", "Event", "Other"];
@@ -26,9 +26,9 @@ function health(d) {
   return null;
 }
 
-const field = { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "#30302e", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none", boxSizing: "border-box" };
+const field = { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none", boxSizing: "border-box" };
 const lbl = { fontSize: 12.5, color: "var(--text3)", marginBottom: 4, marginTop: 14 };
-const qfield = { padding: "8px 10px", borderRadius: 7, border: "1px solid var(--border)", background: "#30302e", color: "var(--text)", fontFamily: "Inter", fontSize: 13.5, outline: "none", boxSizing: "border-box" };
+const qfield = { padding: "8px 10px", borderRadius: 7, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontFamily: "Inter", fontSize: 13.5, outline: "none", boxSizing: "border-box" };
 
 export default function Pipeline({ API }) {
   const [deals, setDeals] = useState([]);
@@ -140,23 +140,23 @@ export default function Pipeline({ API }) {
         onDragStart={() => setDraggingId(d.id)}
         onDragEnd={() => { setDraggingId(null); setOverStage(null); }}
         onClick={() => openDeal(d)}
-        style={{ background: "#262624", border: "1px solid #45433d", borderRadius: 10, padding: "12px 13px", marginBottom: 10, cursor: "grab", opacity: d.status === "lost" ? 0.6 : 1 }}>
+        style={{ background: "var(--card)", border: "1px solid var(--border2)", borderRadius: 10, padding: "12px 13px", marginBottom: 10, cursor: "grab", opacity: d.status === "lost" ? 0.6 : 1 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
             {h && <span title={h.t} style={{ width: 9, height: 9, borderRadius: "50%", background: h.c, flex: "0 0 auto" }} />}
-            <span style={{ fontSize: 14.5, fontWeight: 600, color: "#f4f4f2", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.company || "—"}</span>
+            <span style={{ fontSize: 14.5, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.company || "—"}</span>
           </div>
-          <span style={{ fontSize: 14, fontWeight: 600, color: big ? "#97C459" : "#f4f4f2", flex: "0 0 auto", marginLeft: 8 }}>{fmtK(d.value)}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: big ? "#97C459" : "var(--text)", flex: "0 0 auto", marginLeft: 8 }}>{fmtK(d.value)}</span>
         </div>
-        <div style={{ marginTop: 9 }}><span style={{ fontSize: 11, color: "#9FE1CB", background: "rgba(15,110,86,.22)", padding: "2px 8px", borderRadius: 5 }}>{dealSize(d.value || 0)}</span></div>
+        <div style={{ marginTop: 9 }}><span style={{ fontSize: 11, color: "var(--brand-bright)", background: "rgba(15,110,86,.22)", padding: "2px 8px", borderRadius: 5 }}>{dealSize(d.value || 0)}</span></div>
         {d.next_action ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, marginTop: 10, color: overdue ? "#e2a0a0" : "#bfbfbf" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, marginTop: 10, color: overdue ? "#var(--danger-soft)" : "var(--text2)" }}>
             <span>→</span><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.next_action}{d.next_action_date ? " · " + (overdue ? "Overdue" : "Due " + fmtDate(d.next_action_date)) : ""}</span>
           </div>
         ) : null}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 11, paddingTop: 10, borderTop: "1px solid #3a3a36" }}>
-          <span style={{ fontSize: 12, color: "#8a8a86" }}>{d.days_in_stage != null ? d.days_in_stage + "d in stage" : ""}</span>
-          <span title={d.owner || ""} style={{ width: 23, height: 23, borderRadius: "50%", background: "rgba(15,110,86,.28)", color: "#9FE1CB", fontSize: 11, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center" }}>{initials(d.owner)}</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 11, paddingTop: 10, borderTop: "1px solid var(--border)" }}>
+          <span style={{ fontSize: 12, color: "var(--text3)" }}>{d.days_in_stage != null ? d.days_in_stage + "d in stage" : ""}</span>
+          <span title={d.owner || ""} style={{ width: 23, height: 23, borderRadius: "50%", background: "rgba(15,110,86,.28)", color: "var(--brand-bright)", fontSize: 11, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center" }}>{initials(d.owner)}</span>
         </div>
       </div>
     );
@@ -169,13 +169,13 @@ export default function Pipeline({ API }) {
       <div key={stage}
         onDragOver={(e) => { e.preventDefault(); setOverStage(stage); }}
         onDrop={(e) => { e.preventDefault(); if (draggingId != null) moveDeal(draggingId, stage); setDraggingId(null); setOverStage(null); }}
-        style={{ flex: "0 0 220px", background: overStage === stage ? "#34342f" : "transparent", borderRadius: 10, padding: "6px 6px 10px", transition: "background .12s" }}>
+        style={{ flex: "0 0 220px", background: overStage === stage ? "var(--hover2)" : "transparent", borderRadius: 10, padding: "6px 6px 10px", transition: "background .12s" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3, padding: "0 4px" }}>
           <span style={{ width: 8, height: 8, borderRadius: "50%", background: STAGE_DOT[stage] }} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: "#f4f4f2" }}>{stage}</span>
-          <span style={{ marginLeft: "auto", fontSize: 13, color: "#8a8a86" }}>{colDeals.length}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{stage}</span>
+          <span style={{ marginLeft: "auto", fontSize: 13, color: "var(--text3)" }}>{colDeals.length}</span>
         </div>
-        <div style={{ fontSize: 12, color: "#8a8a86", marginBottom: 12, paddingLeft: 20 }}>{fmtK(total)}</div>
+        <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 12, paddingLeft: 20 }}>{fmtK(total)}</div>
         {colDeals.map(card)}
       </div>
     );
@@ -190,7 +190,7 @@ export default function Pipeline({ API }) {
   const drawer = (selected != null) ? createPortal(
     <>
       <div onClick={close} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 9998 }} />
-      <div style={{ position: "fixed", top: 0, right: 0, height: "100vh", width: 560, maxWidth: "92vw", background: "#262624", borderLeft: "1px solid var(--border2)", zIndex: 9999, overflowY: "auto", fontFamily: "Inter", boxShadow: "-8px 0 30px rgba(0,0,0,0.5)" }}>
+      <div style={{ position: "fixed", top: 0, right: 0, height: "100vh", width: 560, maxWidth: "92vw", background: "var(--card)", borderLeft: "1px solid var(--border2)", zIndex: 9999, overflowY: "auto", fontFamily: "Inter", boxShadow: "-8px 0 30px rgba(0,0,0,0.5)" }}>
         <div style={{ padding: "24px 26px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <div style={{ fontSize: 20, fontWeight: 600, color: "var(--text)" }}>{selected === "new" ? "New deal" : (draft.company || "Deal")}</div>
@@ -228,7 +228,7 @@ export default function Pipeline({ API }) {
           {selected !== "new" && (
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button onClick={() => quickStage("Closed-Won")} style={{ flex: 1, padding: "9px", borderRadius: 9, border: "1px solid #4a6b2a", background: "transparent", color: "#97C459", fontFamily: "Inter", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Mark won</button>
-              <button onClick={() => quickStage("Closed-Lost")} style={{ flex: 1, padding: "9px", borderRadius: 9, border: "1px solid #6e3636", background: "transparent", color: "#e2a0a0", fontFamily: "Inter", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Mark lost</button>
+              <button onClick={() => quickStage("Closed-Lost")} style={{ flex: 1, padding: "9px", borderRadius: 9, border: "1px solid #6e3636", background: "transparent", color: "var(--danger-soft)", fontFamily: "Inter", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Mark lost</button>
               <button onClick={del} style={{ padding: "9px 12px", borderRadius: 9, border: "1px solid var(--border2)", background: "transparent", color: "var(--text3)", fontFamily: "Inter", fontSize: 13, cursor: "pointer" }}>Delete</button>
             </div>
           )}
@@ -315,7 +315,7 @@ export default function Pipeline({ API }) {
         <div style={{ fontFamily: "Inter", fontSize: 32, fontWeight: 600, color: "var(--text)", letterSpacing: -0.5 }}>Pipeline</div>
         <button onClick={openNew} style={{ background: "var(--cyan)", color: "#fff", border: "none", fontFamily: "Inter", fontSize: 14, fontWeight: 600, padding: "9px 16px", borderRadius: 9, cursor: "pointer" }}>+ New deal</button>
       </div>
-      <div style={{ color: "#C3C1B6", fontSize: 15, marginBottom: 20 }}>Drag deals between stages · {fmtBig(openValue)} open across pipeline</div>
+      <div style={{ color: "var(--text2)", fontSize: 15, marginBottom: 20 }}>Drag deals between stages · {fmtBig(openValue)} open across pipeline</div>
 
       <div style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 10 }}>
         {STAGES.map(column)}

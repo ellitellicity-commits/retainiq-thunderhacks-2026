@@ -3,47 +3,59 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg:         #f6f7f9;
-  --bg2:        #ffffff;
-  --card:       #ffffff;
-  --card2:      #f6f7f9;
-  --border:     #e6e8ec;
-  --border2:    #d3d7dd;
-  --cyan:       #0d9488;
-  --cyan-dim:   rgba(13,148,136,0.08);
-  --amber:      #d97706;
-  --red:        #dc2626;
-  --green:      #059669;
-  --purple:     #7c3aed;
-  --blue:       #2563eb;
-  --text:       #1a1f2b;
-  --text2:      #5f6b7a;
-  --text3:      #9aa4b2;
-  --shadow:     0 1px 3px rgba(16,24,40,0.08);
-  --radius:     12px;
-  --radius-lg:  16px;
+  --bg:          #ece8e0;
+  --bg2:         #ece8e0;
+  --card:        #faf8f2;
+  --card2:       #e7e3d9;
+  --sidebar:     #e6e2d8;
+  --hover:       #e8e4da;
+  --hover2:      #dedacf;
+  --border:      #ddd8cc;
+  --border2:     #ccc7b9;
+  --cyan:        #0f6e56;
+  --cyan-dim:    rgba(15,110,86,0.10);
+  --brand-bright:#0f6e56;
+  --logo-text:   #2a2a28;
+  --amber:       #b8740f;
+  --red:         #c0392b;
+  --danger-soft: #b5483f;
+  --green:       #14735d;
+  --purple:      #7c3aed;
+  --blue:        #2563eb;
+  --text:        #2a2a28;
+  --text2:       #57534a;
+  --text3:       #827d6f;
+  --shadow:      0 1px 3px rgba(0,0,0,0.07);
+  --radius:      12px;
+  --radius-lg:   16px;
 }
 
 [data-theme="dark"] {
-  --bg:         #30302e;
-  --bg2:        #30302e;
-  --card:       #30302e;
-  --card2:      #353532;
-  --border:     #3a3a36;
-  --border2:    #45453f;
-  --cyan:       #0f6e56;
-  --cyan-dim:   rgba(15,110,86,0.16);
-  --amber:      #c29a38;
-  --red:        #d94c4c;
-  --green:      #1b7361;
-  --purple:     #a78bfa;
-  --blue:       #60a5fa;
-  --text:       #f4f4f2;
-  --text2:      #bfbfbf;
-  --text3:      #8a8a86;
-  --shadow:     0 4px 24px rgba(0,0,0,0.4);
-  --radius:     12px;
-  --radius-lg:  16px;
+  --bg:          #30302e;
+  --bg2:         #30302e;
+  --card:        #262624;
+  --card2:       #353532;
+  --sidebar:     #2a2a28;
+  --hover:       #2b2b29;
+  --hover2:      #34342f;
+  --border:      #3a3a36;
+  --border2:     #45433d;
+  --cyan:        #0f6e56;
+  --cyan-dim:    rgba(15,110,86,0.16);
+  --brand-bright:#6FD9B7;
+  --logo-text:   #FAF9F5;
+  --amber:       #c29a38;
+  --red:         #d94c4c;
+  --danger-soft: #e2a0a0;
+  --green:       #1b7361;
+  --purple:      #a78bfa;
+  --blue:        #60a5fa;
+  --text:        #f4f4f2;
+  --text2:       #bfbfbf;
+  --text3:       #8a8a86;
+  --shadow:      0 4px 24px rgba(0,0,0,0.4);
+  --radius:      12px;
+  --radius-lg:   16px;
 }
 
 body {

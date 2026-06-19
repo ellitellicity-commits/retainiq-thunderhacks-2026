@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 const th = { textAlign: "left", padding: "13px 16px", color: "var(--text2)", fontWeight: 500, fontSize: 14, whiteSpace: "nowrap" };
 const td = { padding: "14px 16px", color: "var(--text)", fontSize: 15 };
-const ctrl = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "#262624", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none" };
+const ctrl = { padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--card)", color: "var(--text)", fontFamily: "Inter", fontSize: 14, outline: "none" };
 const pill = { padding: "7px 16px", borderRadius: 999, fontFamily: "Inter", fontSize: 14, fontWeight: 500, cursor: "pointer" };
 
 export default function Contacts({ API }) {
@@ -49,7 +49,7 @@ export default function Contacts({ API }) {
     <div>
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontFamily: "Inter", fontSize: 32, fontWeight: 600, color: "var(--text)", letterSpacing: -0.5 }}>Contacts</div>
-        <div style={{ color: "#C3C1B6", fontSize: 15, marginTop: 6 }}>Everyone you work with across your accounts</div>
+        <div style={{ color: "var(--text2)", fontSize: 15, marginTop: 6 }}>Everyone you work with across your accounts</div>
       </div>
 
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 14, flexWrap: "wrap" }}>
@@ -72,7 +72,7 @@ export default function Contacts({ API }) {
       <div style={{ border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Inter" }}>
           <thead>
-            <tr style={{ background: "#262624" }}>
+            <tr style={{ background: "var(--card)" }}>
               <th style={th}>Name</th>
               <th style={th}>Title</th>
               <th style={th}>Company</th>
@@ -83,11 +83,11 @@ export default function Contacts({ API }) {
           <tbody>
             {list.map((c) => (
               <tr key={c.id} style={{ borderTop: "1px solid var(--border)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#2b2b29")}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--hover)")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
                 <td style={{ ...td, fontWeight: 600 }}>
                   {c.name || "—"}
-                  {c.is_primary ? <span style={{ marginLeft: 8, fontSize: 11, color: "#9FE1CB", background: "rgba(15,110,86,.22)", padding: "1px 7px", borderRadius: 5 }}>Primary</span> : null}
+                  {c.is_primary ? <span style={{ marginLeft: 8, fontSize: 11, color: "var(--brand-bright)", background: "rgba(15,110,86,.22)", padding: "1px 7px", borderRadius: 5 }}>Primary</span> : null}
                 </td>
                 <td style={{ ...td, color: "var(--text2)" }}>{c.title || "—"}</td>
                 <td style={{ ...td, color: "var(--text2)" }}>{nameFor(c.client_id)}</td>

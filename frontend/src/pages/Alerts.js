@@ -6,8 +6,8 @@ const OPEN_STAGES = ["New Leads", "Qualified", "Demo", "Quote sent", "Negotiatio
 const fmtBig = (v) => { v = Number(v || 0); return v >= 1e6 ? "$" + (v / 1e6).toFixed(2) + "M" : "$" + Math.round(v / 1e3) + "K"; };
 const initials = (name) => { if (!name) return "—"; const p = name.trim().split(/\s+/); return ((p[0] ? p[0][0] : "") + (p[1] ? p[1][0] : "")).toUpperCase() || "—"; };
 
-const card = { background: "#262624", border: "1px solid #45433d", borderRadius: 12, padding: "16px 18px" };
-const cardTitle = { fontSize: 14, fontWeight: 600, color: "#f4f4f2", marginBottom: 16 };
+const card = { background: "var(--card)", border: "1px solid var(--border2)", borderRadius: 12, padding: "16px 18px" };
+const cardTitle = { fontSize: 14, fontWeight: 600, color: "var(--text)", marginBottom: 16 };
 
 export default function Analytics({ API }) {
   const [deals, setDeals] = useState([]);
@@ -44,7 +44,7 @@ export default function Analytics({ API }) {
   const hasForecast = months.some(m => m.total > 0);
 
   const funnel = OPEN_STAGES.map(st => { const ds = open.filter(d => d.stage === st); return { stage: st, n: ds.length, val: ds.reduce((s, d) => s + (d.value || 0), 0) }; });
-  const funnelShades = ["#0F6E56", "#1D9E75", "#3DB390", "#5DCAA5", "#9FE1CB"];
+  const funnelShades = ["var(--cyan)", "#1D9E75", "#3DB390", "#5DCAA5", "var(--brand-bright)"];
   const funnelWidths = [100, 86, 70, 55, 42];
 
   const byOwner = {};
@@ -53,18 +53,18 @@ export default function Analytics({ API }) {
   const maxRep = Math.max(1, ...reps.map(r => r.val));
 
   const kpis = [
-    { label: "Pipeline value", value: fmtBig(pipelineValue), color: "#f4f4f2" },
-    { label: "Weighted forecast", value: fmtBig(weighted), color: "#9FE1CB" },
+    { label: "Pipeline value", value: fmtBig(pipelineValue), color: "var(--text)" },
+    { label: "Weighted forecast", value: fmtBig(weighted), color: "var(--brand-bright)" },
     { label: "Win rate", value: winRate + "%", color: "#97C459" },
-    { label: "Avg deal size", value: fmtBig(avgDeal), color: "#f4f4f2" },
+    { label: "Avg deal size", value: fmtBig(avgDeal), color: "var(--text)" },
   ];
 
   const metrics = [
-    ["Opportunities created", String(deals.length), "#f4f4f2"],
+    ["Opportunities created", String(deals.length), "var(--text)"],
     ["Won deals", String(won.length), "#97C459"],
     ["Lost deals", String(lost.length), "#d98c8c"],
-    ["Conversion rate", conv + "%", "#f4f4f2"],
-    ["Avg deal size", fmtBig(avgDeal), "#f4f4f2"],
+    ["Conversion rate", conv + "%", "var(--text)"],
+    ["Avg deal size", fmtBig(avgDeal), "var(--text)"],
   ];
 
   return (
@@ -72,10 +72,10 @@ export default function Analytics({ API }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
         <div>
           <div style={{ fontFamily: "Inter", fontSize: 32, fontWeight: 600, color: "var(--text)", letterSpacing: -0.5 }}>Analytics</div>
-          <div style={{ color: "#C3C1B6", fontSize: 15, marginTop: 6 }}>Sales performance &amp; forecast · Digital Move IT &amp; Telecom</div>
+          <div style={{ color: "var(--text2)", fontSize: 15, marginTop: 6 }}>Sales performance &amp; forecast · Digital Move IT &amp; Telecom</div>
         </div>
         <select value={horizon} onChange={(e) => setHorizon(e.target.value)}
-          style={{ background: "#262624", border: "1px solid #45433d", color: "var(--text)", fontFamily: "Inter", fontSize: 13, padding: "9px 12px", borderRadius: 9, cursor: "pointer", outline: "none" }}>
+          style={{ background: "var(--card)", border: "1px solid var(--border2)", color: "var(--text)", fontFamily: "Inter", fontSize: 13, padding: "9px 12px", borderRadius: 9, cursor: "pointer", outline: "none" }}>
           <option value="3">Forecast: next 3 months</option>
           <option value="6">Forecast: next 6 months</option>
           <option value="12">Forecast: next 12 months</option>
@@ -85,7 +85,7 @@ export default function Analytics({ API }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 18 }}>
         {kpis.map(k => (
           <div key={k.label} style={card}>
-            <div style={{ fontSize: 13, color: "#bfbfbf", marginBottom: 8 }}>{k.label}</div>
+            <div style={{ fontSize: 13, color: "var(--text2)", marginBottom: 8 }}>{k.label}</div>
             <div style={{ fontSize: 28, fontWeight: 600, color: k.color, letterSpacing: -0.5 }}>{k.value}</div>
           </div>
         ))}
@@ -100,17 +100,17 @@ export default function Analytics({ API }) {
                 <div style={{ display: "flex", alignItems: "flex-end", gap: 16, height: 150 }}>
                   {months.map((m, i) => (
                     <div key={m.key} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "#f4f4f2", marginBottom: 6 }}>{m.total > 0 ? fmtBig(m.total) : ""}</span>
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text)", marginBottom: 6 }}>{m.total > 0 ? fmtBig(m.total) : ""}</span>
                       <div style={{ width: "100%", height: Math.round((m.total / maxMonth) * 120) + 2, background: fcShades[Math.min(i, fcShades.length - 1)], borderRadius: 5 }} />
                     </div>
                   ))}
                 </div>
                 <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
-                  {months.map(m => <span key={m.key} style={{ flex: 1, textAlign: "center", fontSize: 12, color: "#bfbfbf" }}>{m.label}</span>)}
+                  {months.map(m => <span key={m.key} style={{ flex: 1, textAlign: "center", fontSize: 12, color: "var(--text2)" }}>{m.label}</span>)}
                 </div>
               </>
             ) : (
-              <div style={{ fontSize: 13, color: "#8a8a86", padding: "24px 0" }}>No deals with a close date in this window. Set expected close dates on deals to populate the forecast.</div>
+              <div style={{ fontSize: 13, color: "var(--text3)", padding: "24px 0" }}>No deals with a close date in this window. Set expected close dates on deals to populate the forecast.</div>
             )}
           </div>
 
@@ -129,15 +129,15 @@ export default function Analytics({ API }) {
         <div style={{ flex: "1 1 280px", minWidth: 260 }}>
           <div style={{ ...card, marginBottom: 16 }}>
             <div style={cardTitle}>Open pipeline by rep</div>
-            {reps.length === 0 && <div style={{ fontSize: 13, color: "#8a8a86" }}>No open deals.</div>}
+            {reps.length === 0 && <div style={{ fontSize: 13, color: "var(--text3)" }}>No open deals.</div>}
             {reps.map(r => (
               <div key={r.owner} style={{ marginBottom: 14 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 5 }}>
-                  <span style={{ color: "#f4f4f2" }}>{r.owner}</span>
-                  <span style={{ color: "#9FE1CB", fontWeight: 600 }}>{fmtBig(r.val)}</span>
+                  <span style={{ color: "var(--text)" }}>{r.owner}</span>
+                  <span style={{ color: "var(--brand-bright)", fontWeight: 600 }}>{fmtBig(r.val)}</span>
                 </div>
-                <div style={{ height: 8, background: "#3a3a36", borderRadius: 4 }}>
-                  <div style={{ width: Math.round((r.val / maxRep) * 100) + "%", height: 8, background: "#0F6E56", borderRadius: 4 }} />
+                <div style={{ height: 8, background: "var(--border)", borderRadius: 4 }}>
+                  <div style={{ width: Math.round((r.val / maxRep) * 100) + "%", height: 8, background: "var(--cyan)", borderRadius: 4 }} />
                 </div>
               </div>
             ))}
@@ -147,9 +147,9 @@ export default function Analytics({ API }) {
             <div style={{ ...cardTitle, marginBottom: 12 }}>Sales metrics</div>
             <div style={{ fontSize: 13 }}>
               {metrics.map((m, i) => (
-                <div key={m[0]} style={{ display: "flex", justifyContent: "space-between", padding: "9px 8px", borderRadius: 6, background: i % 2 === 0 ? "#2b2b29" : "transparent" }}>
-                  <span style={{ color: "#bfbfbf" }}>{m[0]}</span>
-                  <span style={{ color: m[2], fontWeight: m[2] !== "#f4f4f2" ? 600 : 400 }}>{m[1]}</span>
+                <div key={m[0]} style={{ display: "flex", justifyContent: "space-between", padding: "9px 8px", borderRadius: 6, background: i % 2 === 0 ? "var(--hover)" : "transparent" }}>
+                  <span style={{ color: "var(--text2)" }}>{m[0]}</span>
+                  <span style={{ color: m[2], fontWeight: m[2] !== "var(--text)" ? 600 : 400 }}>{m[1]}</span>
                 </div>
               ))}
             </div>
