@@ -1,14 +1,12 @@
 <div align="center">
 
 <img src="https://img.shields.io/badge/ThunderHacks_2026-Algoma_University-00e5ff?style=for-the-badge&labelColor=0a0f1e" />
-&nbsp;
 <img src="https://img.shields.io/badge/Digital_Move-Gold_Sponsor_Challenge-f59e0b?style=for-the-badge&labelColor=0a0f1e" />
+<h1>RetainIQ</h1>
+<strong>Know who's leaving. Reach them first.</strong>
+<br /><br />
 
-# RetainIQ
-
-#### Know who's leaving. Reach them first.
-
-**[Live Demo](https://retainiq-thunderhacks-2026.vercel.app)** · **[GitHub](https://github.com/ellitellicity-commits/retainiq-thunderhacks-2026)**
+<strong><a href="https://retainiq-thunderhacks-2026.vercel.app">Live Demo</a> · <a href="https://github.com/ellitellicity-commits/retainiq-thunderhacks-2026">GitHub</a></strong>
 
 </div>
 
