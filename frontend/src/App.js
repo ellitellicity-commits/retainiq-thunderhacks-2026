@@ -8,7 +8,10 @@ import Alerts from "./pages/Alerts";
 import Journey from "./pages/Journey";
 import "./App.css";
 
-const API = "http://localhost:5001";
+const API =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5001"
+    : "https://retainiq-thunderhacks-2026.onrender.com";
 
 const ICONS = {
   dashboard: (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>),
