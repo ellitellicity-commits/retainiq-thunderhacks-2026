@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import csv
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "retainiq.db")
@@ -124,6 +125,63 @@ def init_db():
     conn.commit()
     conn.close()
     print("✅ Database initialized successfully!")
+    
+# New Seeding Function Implementation
+CSV_PATH = os.path.join(BASE_DIR, "clients.csv")
 
+def _to_float(v):
+    try:
+        return float(str(v).replace(",", "").replace("$", "").strip())
+    except (TypeError, ValueError):
+        return None
+
+def seed_if_empty():
+    """Load demo data from clients.csv if the database is empty.
+    Needed because Render's free tier wipes the disk on every boot,
+    so the DB starts empty and no import is ever run in production."""
+    conn = get_db()
+    c = conn.cursor()
+
+    count = c.execute("SELECT COUNT(*) FROM clients").fetchone()[0]
+    if count > 0:
+        conn.close()
+        return
+
+    if not os.path.exists(CSV_PATH):
+        print("⚠️  clients.csv not found — skipping demo seed.")
+        conn.close()
+        return
+
+    rows = 0
+    with open(CSV_PATH, newline="", encoding="utf-8-sig") as f:
+        for row in csv.DictReader(f):
+            company = (row.get("client_name") or "").strip()
+            if not company:
+                continue
+            c.execute("INSERT INTO clients (company_name) VALUES (?)", (company,))
+            client_id = c.lastrowid
+            c.execute(
+                """INSERT INTO contracts
+                   (client_id, software, vendor, start_date, expiry_date,
+                    value, assigned_to, status, last_contact)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?)""",
+                (
+                    client_id,
+                    (row.get("software") or "").strip() or None,
+                    (row.get("vendor") or "").strip() or None,
+                    (row.get("contract_start") or "").strip() or None,
+                    (row.get("contract_expiry") or "").strip() or None,
+                    _to_float(row.get("contract_value")),
+                    (row.get("account_manager") or "").strip() or None,
+                    (row.get("last_contact") or "").strip() or None,
+                ),
+            )
+            rows += 1
+
+    conn.commit()
+    conn.close()
+    print(f"✅ Seeded {rows} demo clients from clients.csv")
+    
 if __name__ == "__main__":
     init_db()
+    seed_if_empty()
