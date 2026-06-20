@@ -3,7 +3,7 @@ import random
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from model import load_and_train, get_dataframe, score_new_customer, _assign_stage
-from database import get_db, init_db
+from database import get_db, init_db, seed_if_empty
 
 app = Flask(__name__)
 from contacts_api import contacts_bp
@@ -581,6 +581,9 @@ def import_data():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Render wipes the disk on every boot, so rebuild + reseed the DB on startup.
+init_db()
+seed_if_empty()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
