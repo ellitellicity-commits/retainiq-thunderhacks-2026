@@ -5,8 +5,11 @@
 ### Know who's leaving. Reach them first.
 
 <p align="center">
-  [**Live Demo**](https://vercel.app) &nbsp;·&nbsp; [**Source Code**](https://github.com)
+  <a href="https://vercel.app"><strong>Live Demo</strong></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com"><strong>Source Code</strong></a>
 </p>
+
 
 
 🏆 &nbsp;**Gold Sponsor Challenge Winner (ThunderHacks 2026)**
