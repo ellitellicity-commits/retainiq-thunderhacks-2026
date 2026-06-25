@@ -4,7 +4,10 @@
 
 ### Know who's leaving. Reach them first.
 
-[**Live Demo**](https://retainiq-thunderhacks-2026.vercel.app) &nbsp;·&nbsp; [**Source Code**](https://github.com/ellitellicity-commits/retainiq-thunderhacks-2026) &nbsp;·&nbsp; **MIT License**
+<p align="center">
+  [**Live Demo**](https://vercel.app) &nbsp;·&nbsp; [**Source Code**](https://github.com)
+</p>
+
 
 🏆 &nbsp;**Gold Sponsor Challenge Winner — ThunderHacks 2026**
 
