@@ -9,7 +9,7 @@
 </p>
 
 
-🏆 &nbsp;**Gold Sponsor Challenge Winner — ThunderHacks 2026**
+🏆 &nbsp;**Gold Sponsor Challenge Winner (ThunderHacks 2026)**
 
 </div>
 
