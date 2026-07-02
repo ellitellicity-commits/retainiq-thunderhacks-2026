@@ -12,13 +12,13 @@
 
 
 
-🏆 &nbsp;**Gold Sponsor Challenge Winner (ThunderHacks 2026)**
+&nbsp;**Gold Sponsor Challenge Winner (ThunderHacks 2026)**
 
 </div>
 
 ---
 
-## ⚙ Overview
+## Overview
 
 RetainIQ is a customer retention intelligence platform built for **Digital Move IT & Telecom** in just 24 hours at ThunderHacks 2026.
 
@@ -73,7 +73,7 @@ By analyzing your entire customer base in real time, RetainIQ automatically scor
 
 ---
 
-## 🎯 Sponsor Pillars: Digital Move
+## Sponsor Pillars: Digital Move
 
 Our implementation matches the core priorities outlined for the Digital Move challenge:
 
@@ -112,7 +112,7 @@ npm start
 
 ---
 
-## ⚠️ Deployment Notes
+## Deployment Notes
 
 The frontend lives on **Vercel** and the backend is hosted on **Render**.
 
