@@ -5,7 +5,7 @@
 ### Know who's leaving. Reach them first.
 
 <p align="center">
-  <a href="https://vercel.app"><strong>Live Demo</strong></a>
+  <a href="https://retainiq-thunderhacks-2026.vercel.app/"><strong>Live Demo</strong></a>
   &nbsp;·&nbsp;
   <a href="https://github.com"><strong>Source Code</strong></a>
 </p>
