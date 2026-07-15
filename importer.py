@@ -229,7 +229,7 @@ def import_file(filepath):
     conn.commit()
     conn.close()
 
-    print(f"✅ Imported {imported} rows | contacts: {contacts_added} | renewal deals: {renewals}")
+    print(f"Imported {imported} rows | contacts: {contacts_added} | renewal deals: {renewals}")
     return {"imported": imported, "contacts": contacts_added, "renewals": renewals, "mapping": mapping}
 
 if __name__ == "__main__":

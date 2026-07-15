@@ -28,7 +28,7 @@ def ensure_model_loaded():
     if not model_loaded:
         load_and_train(CSV_PATH)
         model_loaded = True
-        print("✅ Model trained and data loaded.")
+        print("Model trained and data loaded.")
 
 
 def generate_template_email(name, plan, spend, days_no_contact, risk_score, days_until_expiry=None, software=None, contract_expiry=None, account_manager=None):

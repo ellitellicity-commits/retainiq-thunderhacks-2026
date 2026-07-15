@@ -30,7 +30,7 @@ const field = { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1p
 const lbl = { fontSize: 12.5, color: "var(--text3)", marginBottom: 4, marginTop: 14 };
 const qfield = { padding: "8px 10px", borderRadius: 7, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontFamily: "Inter", fontSize: 13.5, outline: "none", boxSizing: "border-box" };
 
-export default function Pipeline({ API }) {
+export default function Pipeline({ API, pageAction, clearAction }) {
   const [deals, setDeals] = useState([]);
   const [draggingId, setDraggingId] = useState(null);
   const [overStage, setOverStage] = useState(null);
@@ -52,6 +52,18 @@ export default function Pipeline({ API }) {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [API]);
+
+  useEffect(() => {
+    if (pageAction === "new-deal") {
+      setSelected("new");
+      setDraft({ company: "", value: "", stage: "New Leads", owner: "", product: "", lead_source: "Inbound", next_action: "", next_action_date: "", expected_close_date: "" });
+      setQuoteItems([]);
+      setQuoteDiscount("0");
+      setQuoteStatus("none");
+      setQuoteMsg("");
+      if (clearAction) clearAction();
+    }
+  }, [pageAction, clearAction]);
 
   const openValue = deals.filter(d => d.status === "open").reduce((s, d) => s + (d.value || 0), 0);
 

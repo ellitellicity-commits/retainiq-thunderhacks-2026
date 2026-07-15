@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
+import ActivityTimeline from "../components/ActivityTimeline";
+import NoteEditor from "../components/NoteEditor";
+import { ACTIVITIES, NOTES } from "../data/mockData";
 
 const fmtMoney = (v) =>
   v === null || v === undefined || v === "" ? "—" : "$" + Number(v).toLocaleString();
@@ -34,7 +37,7 @@ const ctrl = {
 const cfield = { width: "100%", padding: "8px 11px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontFamily: "Inter", fontSize: 13.5, outline: "none", boxSizing: "border-box", marginBottom: 8 };
 const iconBtn = { background: "transparent", border: "1px solid var(--border2)", color: "var(--text3)", fontFamily: "Inter", fontSize: 12.5, padding: "4px 10px", borderRadius: 7, cursor: "pointer" };
 
-export default function Clients({ API }) {
+export default function Clients({ API, pageAction, clearAction }) {
   const [clients, setClients] = useState([]);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState("expiry");
@@ -57,9 +60,24 @@ export default function Clients({ API }) {
   const [quotes, setQuotes] = useState([]);
   const [quotesLoading, setQuotesLoading] = useState(false);
 
+  // Drawer tabs
+  const [drawerTab, setDrawerTab] = useState("details");
+
   useEffect(() => {
     fetch(`${API}/api/db/clients`).then(r => r.json()).then(setClients).catch(() => setClients([]));
   }, [API]);
+
+  useEffect(() => {
+    if (pageAction === "new-note") {
+      if (clients.length > 0 && !selected) {
+        setSelected(clients[0]);
+        setDrawerTab("notes");
+      } else if (selected) {
+        setDrawerTab("notes");
+      }
+      if (clearAction) clearAction();
+    }
+  }, [pageAction, clearAction, clients, selected]);
 
   const nameOf = (c) => c.company_name || c.client_name || "—";
 
@@ -146,7 +164,7 @@ export default function Clients({ API }) {
   const openClient = (c) => {
     setSelected(c); setEmail(null);
     setContacts([]); setContactForm(null); setSelectedContactId("");
-    setQuotes([]);
+    setQuotes([]); setDrawerTab("details");
     loadContacts(c.id);
     loadQuotes(nameOf(c));
   };
@@ -270,6 +288,28 @@ export default function Clients({ API }) {
               style={{ background: "transparent", border: "none", color: "var(--text3)", fontSize: 26, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
           </div>
 
+          <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--border)", marginBottom: 0, marginTop: 16 }}>
+            {[["details", "Details"], ["activity", "Activity"], ["notes", "Notes"]].map(([id, label]) => (
+              <button key={id} onClick={() => setDrawerTab(id)}
+                style={{ padding: "10px 18px", fontSize: 13, fontWeight: 500, fontFamily: "Inter", cursor: "pointer", border: "none", borderBottom: drawerTab === id ? "2px solid var(--cyan)" : "2px solid transparent", background: "transparent", color: drawerTab === id ? "var(--brand-bright)" : "var(--text3)" }}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {drawerTab === "activity" && (
+            <div style={{ marginTop: 18 }}>
+              <ActivityTimeline activities={ACTIVITIES.filter(a => a.clientId === selected.id || a.clientId <= 2)} maxItems={12} />
+            </div>
+          )}
+
+          {drawerTab === "notes" && (
+            <div style={{ marginTop: 18 }}>
+              <NoteEditor notes={NOTES} entityId={selected.id} entityType="client" />
+            </div>
+          )}
+
+          {drawerTab === "details" && <>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 18px", padding: "18px 0", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
             {[
               ["Software", selected.software || "—"],
@@ -405,7 +445,7 @@ export default function Clients({ API }) {
                 </div>
               </div>
             )}
-          </div>
+          </div></>}
         </div>
       </motion.div>
     </>,
