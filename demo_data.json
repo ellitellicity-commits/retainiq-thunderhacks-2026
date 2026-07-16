@@ -1,0 +1,40 @@
+{
+  "contacts": [
+    {"client_id": 1, "company": "RBC Bank", "name": "Marcus Reid", "title": "VP Technology", "email": "marcus.reid@rbc.ca", "phone": "416-555-0101", "is_primary": 1},
+    {"client_id": 1, "company": "RBC Bank", "name": "Diana Foster", "title": "Procurement Director", "email": "diana.foster@rbc.ca", "phone": "416-555-0102", "is_primary": 0},
+    {"client_id": 1, "company": "RBC Bank", "name": "Alan Park", "title": "CISO", "email": "alan.park@rbc.ca", "phone": "416-555-0103", "is_primary": 0},
+    {"client_id": 4, "company": "Bell Canada", "name": "James Morrison", "title": "VP Security", "email": "james.morrison@bellcanada.ca", "phone": "514-555-0201", "is_primary": 1},
+    {"client_id": 4, "company": "Bell Canada", "name": "Linda Zhao", "title": "IT Director", "email": "linda.zhao@bellcanada.ca", "phone": "514-555-0202", "is_primary": 0},
+    {"client_id": 4, "company": "Bell Canada", "name": "Robert Singh", "title": "Procurement Lead", "email": "robert.singh@bellcanada.ca", "phone": "514-555-0203", "is_primary": 0},
+    {"client_id": 5, "company": "TD Bank", "name": "Aisha Khan", "title": "CFO", "email": "aisha.khan@tdbank.ca", "phone": "416-555-0301", "is_primary": 1},
+    {"client_id": 5, "company": "TD Bank", "name": "Mike Torres", "title": "CISO", "email": "mike.torres@tdbank.ca", "phone": "416-555-0302", "is_primary": 0},
+    {"client_id": 5, "company": "TD Bank", "name": "Sarah Chen", "title": "VP Operations", "email": "sarah.chen@tdbank.ca", "phone": "416-555-0303", "is_primary": 0},
+    {"client_id": 16, "company": "Sun Life Financial", "name": "Rachel Green", "title": "CTO", "email": "rachel.green@sunlife.ca", "phone": "416-555-0401", "is_primary": 1},
+    {"client_id": 16, "company": "Sun Life Financial", "name": "Kevin Liu", "title": "Security Lead", "email": "kevin.liu@sunlife.ca", "phone": "416-555-0402", "is_primary": 0},
+    {"client_id": 17, "company": "Telus Corporation", "name": "David Chen", "title": "VP Operations", "email": "david.chen@telus.ca", "phone": "604-555-0501", "is_primary": 1},
+    {"client_id": 17, "company": "Telus Corporation", "name": "Lisa Tran", "title": "IT Manager", "email": "lisa.tran@telus.ca", "phone": "604-555-0502", "is_primary": 0},
+    {"client_id": 15, "company": "Manulife", "name": "Karen Wu", "title": "Procurement", "email": "karen.wu@manulife.ca", "phone": "416-555-0601", "is_primary": 1},
+    {"client_id": 15, "company": "Manulife", "name": "Chris Hall", "title": "IT Director", "email": "chris.hall@manulife.ca", "phone": "416-555-0602", "is_primary": 0},
+    {"client_id": 3, "company": "Rogers Communications", "name": "Alex Dubois", "title": "VP IT", "email": "alex.dubois@rogers.ca", "phone": "416-555-0701", "is_primary": 1},
+    {"client_id": 3, "company": "Rogers Communications", "name": "Jennifer Lee", "title": "Security Analyst", "email": "jennifer.lee@rogers.ca", "phone": "416-555-0702", "is_primary": 0},
+    {"client_id": 6, "company": "Scotiabank", "name": "Robert Singh", "title": "CTO", "email": "robert.singh@scotiabank.ca", "phone": "416-555-0801", "is_primary": 1},
+    {"client_id": 6, "company": "Scotiabank", "name": "Maria Garcia", "title": "IT Director", "email": "maria.garcia@scotiabank.ca", "phone": "416-555-0802", "is_primary": 0},
+    {"client_id": 7, "company": "CIBC", "name": "Chris Johnson", "title": "VP Technology", "email": "chris.johnson@cibc.ca", "phone": "416-555-0901", "is_primary": 1},
+    {"client_id": 7, "company": "CIBC", "name": "Nancy Kim", "title": "Procurement Lead", "email": "nancy.kim@cibc.ca", "phone": "416-555-0902", "is_primary": 0},
+    {"client_id": 12, "company": "Loblaw Companies", "name": "Priya Sharma", "title": "Dir. Engineering", "email": "priya.sharma@loblaw.ca", "phone": "416-555-1001", "is_primary": 1},
+    {"client_id": 12, "company": "Loblaw Companies", "name": "Tom Baker", "title": "VP Platform", "email": "tom.baker@loblaw.ca", "phone": "416-555-1002", "is_primary": 0}
+  ],
+  "reps": ["Priya Sharma", "Marcus Reid", "Aisha Khan", "David Chen"],
+  "deals": [
+    {"company": "TD Bank", "client_id": 5, "value": 150000, "stage": "Negotiation", "owner": "Aisha Khan", "product": "Enterprise Security Platform", "lead_source": "Referral"},
+    {"company": "Bell Canada", "client_id": 4, "value": 520000, "stage": "Negotiation", "owner": "Priya Sharma", "product": "Network Security Suite", "lead_source": "Inbound"},
+    {"company": "RBC Bank", "client_id": 1, "value": 200000, "stage": "Quote sent", "owner": "Marcus Reid", "product": "IBM QRadar Renewal", "lead_source": "Existing Customer"},
+    {"company": "Sun Life Financial", "client_id": 16, "value": 340000, "stage": "Quote sent", "owner": "Priya Sharma", "product": "Cloud Security Platform", "lead_source": "Outbound"},
+    {"company": "Loblaw Companies", "client_id": 12, "value": 180000, "stage": "Demo", "owner": "David Chen", "product": "Endpoint Protection", "lead_source": "Inbound"},
+    {"company": "Telus Corporation", "client_id": 17, "value": 95000, "stage": "Closed-Won", "owner": "Aisha Khan", "product": "Managed Detection", "lead_source": "Partner"},
+    {"company": "Manulife", "client_id": 15, "value": 95000, "stage": "Closed-Won", "owner": "David Chen", "product": "Identity Platform", "lead_source": "Inbound"},
+    {"company": "Rogers Communications", "client_id": 3, "value": 75000, "stage": "Qualified", "owner": "Marcus Reid", "product": "Backup Security", "lead_source": "Outbound"},
+    {"company": "Scotiabank", "client_id": 6, "value": 280000, "stage": "Demo", "owner": "Aisha Khan", "product": "Threat Intelligence", "lead_source": "Referral"},
+    {"company": "CIBC", "client_id": 7, "value": 160000, "stage": "New Leads", "owner": "David Chen", "product": "Zero Trust Platform", "lead_source": "Event"}
+  ]
+}

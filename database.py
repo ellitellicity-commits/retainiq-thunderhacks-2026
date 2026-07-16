@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import csv
+import json
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "retainiq.db")
@@ -38,6 +39,20 @@ def init_db():
             is_primary INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (client_id) REFERENCES clients(id)
+        )
+    ''')
+
+    # Client contacts table (used by UI)
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS client_contacts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            client_id INTEGER,
+            name TEXT,
+            title TEXT,
+            email TEXT,
+            phone TEXT,
+            is_primary INTEGER DEFAULT 0,
+            created_at TEXT
         )
     ''')
 
@@ -101,6 +116,40 @@ def init_db():
         )
     ''')
 
+    # Pipeline deals table (used by UI)
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS pipeline_deals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            company TEXT,
+            client_id INTEGER,
+            value REAL,
+            stage TEXT,
+            owner TEXT,
+            next_action TEXT,
+            next_action_date TEXT,
+            lead_source TEXT,
+            product TEXT,
+            stage_updated_at TEXT,
+            created_at TEXT,
+            status TEXT DEFAULT 'open',
+            expected_close_date TEXT,
+            quote_discount REAL,
+            quote_status TEXT
+        )
+    ''')
+
+    # Quote items table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS quote_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            deal_id INTEGER,
+            description TEXT,
+            quantity INTEGER DEFAULT 1,
+            unit_price REAL,
+            sort_order INTEGER DEFAULT 0
+        )
+    ''')
+
     # Extra fields table — for any custom columns from their Excel
     c.execute('''
         CREATE TABLE IF NOT EXISTS extra_fields (
@@ -124,7 +173,7 @@ def init_db():
 
     conn.commit()
     conn.close()
-    print("✅ Database initialized successfully!")
+    print("Database initialized successfully!")
     
 # New Seeding Function Implementation
 CSV_PATH = os.path.join(BASE_DIR, "clients.csv")
@@ -148,7 +197,7 @@ def seed_if_empty():
         return
 
     if not os.path.exists(CSV_PATH):
-        print("⚠️  clients.csv not found — skipping demo seed.")
+        print("Warning: clients.csv not found -- skipping demo seed.")
         conn.close()
         return
 
@@ -178,10 +227,28 @@ def seed_if_empty():
             )
             rows += 1
 
+    # Seed demo contacts and deals from demo_data.json
+    demo_json_path = os.path.join(BASE_DIR, "demo_data.json")
+    if os.path.exists(demo_json_path):
+        with open(demo_json_path, encoding="utf-8") as f:
+            demo = json.load(f)
+        for ct in demo.get("contacts", []):
+            c.execute(
+                """INSERT INTO client_contacts (client_id, name, title, email, phone, is_primary)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (ct["client_id"], ct["name"], ct["title"], ct["email"], ct["phone"], ct["is_primary"])
+            )
+        for deal in demo.get("deals", []):
+            c.execute(
+                """INSERT INTO pipeline_deals (company, client_id, value, stage, owner, product, lead_source, status, created_at, stage_updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, 'open', '2026-07-01', '2026-07-10')""",
+                (deal["company"], deal["client_id"], deal["value"], deal["stage"], deal["owner"], deal["product"], deal["lead_source"])
+            )
+
     conn.commit()
     conn.close()
-    print(f"✅ Seeded {rows} demo clients from clients.csv")
-    
+    print(f"Seeded {rows} demo clients from clients.csv")
+
 if __name__ == "__main__":
     init_db()
     seed_if_empty()
