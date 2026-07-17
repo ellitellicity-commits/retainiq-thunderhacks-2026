@@ -126,7 +126,7 @@ Because the backend runs on a free-tier instance, it spins down into a sleep sta
 
 <div align="center">
 
-**Ellison Naz** • **Rishav Bawa**
+**Ellison Naz** • **Rishav Bawa** • **Joel Saji Varghese**
 
 <sub>ThunderHacks 2026 • Algoma University • March 2026</sub>
 
