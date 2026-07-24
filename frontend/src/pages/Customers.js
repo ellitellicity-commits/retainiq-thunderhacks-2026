@@ -206,9 +206,9 @@ export default function Clients({ API, pageAction, clearAction }) {
         done_by: selected.account_manager || undefined,
       }),
     })
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error("save failed"); return r.json(); })
       .then(() => { setLogForm(null); loadActivities(selected.id); })
-      .catch(() => {})
+      .catch(() => setLogForm(f => f ? { ...f, error: true } : f))
       .finally(() => setLogSaving(false));
   };
 
@@ -367,9 +367,12 @@ export default function Clients({ API, pageAction, clearAction }) {
                     {logForm.type === "call" ? "Log a call" : "Log a meeting"}
                   </div>
                   <textarea style={{ ...cfield, minHeight: 70, resize: "vertical" }} placeholder="Notes"
-                    value={logForm.notes} onChange={(e) => setLogForm({ ...logForm, notes: e.target.value })} />
+                    value={logForm.notes} onChange={(e) => setLogForm({ ...logForm, notes: e.target.value, error: false })} />
                   <input type="date" style={cfield} value={logForm.date}
-                    onChange={(e) => setLogForm({ ...logForm, date: e.target.value })} />
+                    onChange={(e) => setLogForm({ ...logForm, date: e.target.value, error: false })} />
+                  {logForm.error && (
+                    <div style={{ fontSize: 12, color: "var(--danger-soft)", marginBottom: 8 }}>Couldn't save — try again.</div>
+                  )}
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={saveLog} disabled={logSaving}
                       style={{ flex: 1, padding: "8px", borderRadius: 8, border: "none", background: "var(--cyan)", color: "#fff", fontFamily: "Inter", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: logSaving ? 0.7 : 1 }}>

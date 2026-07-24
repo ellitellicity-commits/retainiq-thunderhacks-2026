@@ -76,17 +76,24 @@ def log_activity(client_id, type, notes=None, done_by=None, date_=None, notif_me
     drawer to show it in — but the notification still fires, since the
     global notification feed isn't client-scoped. This must never raise:
     callers rely on a name-matching miss not breaking the deal/quote action.
+
+    Returns the inserted activity row's id, or None if it was skipped
+    (unresolved client_id) or failed (caller can tell "no row was written"
+    apart from "wrote a row" without re-querying "latest for this client",
+    which would silently return a stale row on the rare insert failure).
     """
     title = _default_title(type, title_ctx)
+    activity_id = None
     conn = get_conn()
     try:
         if client_id:
             resolved_done_by = done_by or _fallback_done_by(conn, client_id)
-            conn.execute(
+            cur = conn.execute(
                 f"INSERT INTO {TABLE} (client_id, type, title, notes, date, done_by) VALUES (?, ?, ?, ?, ?, ?)",
                 (client_id, type, title, notes, date_ or date.today().isoformat(), resolved_done_by),
             )
             conn.commit()
+            activity_id = cur.lastrowid
     except Exception as e:
         print("log_activity warning (activity insert skipped):", e)
     finally:
@@ -101,6 +108,8 @@ def log_activity(client_id, type, notes=None, done_by=None, date_=None, notif_me
         )
     except Exception as e:
         print("log_activity warning (notification skipped):", e)
+
+    return activity_id
 
 
 @activities_bp.route("/api/db/activities", methods=["GET"])
@@ -135,17 +144,17 @@ def create_activity():
     client_id = d.get("client_id")
     if not client_id:
         return jsonify({"error": "client_id is required"}), 400
-    log_activity(
+    activity_id = log_activity(
         client_id=client_id,
         type=d.get("type") or "note",
         notes=d.get("notes"),
         done_by=d.get("done_by"),
         date_=d.get("date"),
     )
+    if not activity_id:
+        return jsonify({"error": "activity was not persisted"}), 500
     conn = get_conn()
-    row = conn.execute(
-        f"SELECT * FROM {TABLE} WHERE client_id = ? ORDER BY id DESC LIMIT 1", (client_id,)
-    ).fetchone()
+    row = conn.execute(f"SELECT * FROM {TABLE} WHERE id = ?", (activity_id,)).fetchone()
     conn.close()
     if not row:
         return jsonify({"error": "activity was not persisted"}), 500
