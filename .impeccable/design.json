@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-24T17:56:55Z",
+  "generatedAt": "2026-07-24T19:06:13Z",
   "title": "Design System: RetainIQ",
   "extensions": {
     "colorMeta": {
@@ -101,6 +101,20 @@
       "description": "First recharts usage in the system (Analytics → Retention trend). Gradient-filled area over a horizontal-only grid, all styling driven by tokens instead of recharts defaults; this static SVG is a representative preview, not the live recharts output.",
       "html": "<div class=\"ds-chart-card\"><div class=\"ds-chart-title\">Retention trend</div><svg class=\"ds-chart-svg\" viewBox=\"0 0 300 120\" preserveAspectRatio=\"none\" role=\"img\" aria-label=\"Retention trend, ending at 36%\"><defs><linearGradient id=\"ds-chart-fill\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"var(--brand-bright, #6FD9B7)\" stop-opacity=\"0.28\"/><stop offset=\"100%\" stop-color=\"var(--brand-bright, #6FD9B7)\" stop-opacity=\"0\"/></linearGradient></defs><line x1=\"0\" y1=\"20\" x2=\"300\" y2=\"20\" class=\"ds-chart-grid\"/><line x1=\"0\" y1=\"60\" x2=\"300\" y2=\"60\" class=\"ds-chart-grid\"/><line x1=\"0\" y1=\"100\" x2=\"300\" y2=\"100\" class=\"ds-chart-grid\"/><path d=\"M0,85 L60,80 L120,75 L180,78 L240,70 L300,82 L300,120 L0,120 Z\" fill=\"url(#ds-chart-fill)\"/><path d=\"M0,85 L60,80 L120,75 L180,78 L240,70 L300,82\" class=\"ds-chart-line\"/><circle cx=\"300\" cy=\"82\" r=\"3\" class=\"ds-chart-dot\"/></svg></div>",
       "css": ".ds-chart-card { background: var(--card, #faf8f2); border: 1px solid var(--border2, #ccc7b9); border-radius: 12px; padding: 16px 18px; } .ds-chart-title { font-family: Inter, sans-serif; font-size: 14px; font-weight: 600; color: var(--text-primary, #2a2a28); margin-bottom: 16px; } .ds-chart-svg { width: 100%; height: 120px; overflow: visible; } .ds-chart-grid { stroke: var(--border, #ddd8cc); stroke-width: 1; } .ds-chart-line { fill: none; stroke: var(--brand-bright, #6FD9B7); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; } .ds-chart-dot { fill: var(--brand-bright, #6FD9B7); stroke: var(--card, #faf8f2); stroke-width: 2; }"
+    },
+    {
+      "name": "Inline Log-Entry Form",
+      "kind": "custom",
+      "description": "\"+ Log a call\" / \"+ Log a meeting\" in the client drawer's Activity tab. Same inline bordered-box pattern as the drawer's existing \"+ Add contact\" form -- a short capture form stays inline in the flow rather than opening a modal.",
+      "html": "<div class=\"ds-log-form\"><div class=\"ds-log-form-title\">Log a call</div><textarea class=\"ds-log-form-field\" placeholder=\"Notes\"></textarea><input class=\"ds-log-form-field\" type=\"date\" value=\"2026-07-24\"/><div class=\"ds-log-form-actions\"><button class=\"ds-log-form-save\">Save</button><button class=\"ds-log-form-cancel\">Cancel</button></div></div>",
+      "css": ".ds-log-form { border: 1px solid var(--border2, #ccc7b9); border-radius: 10px; padding: 12px 13px; background: var(--hover, #e8e4da); } .ds-log-form-title { font-family: Inter, sans-serif; font-size: 13px; font-weight: 600; color: var(--text-primary, #2a2a28); margin-bottom: 8px; } .ds-log-form-field { width: 100%; padding: 8px 11px; border-radius: 8px; border: 1px solid var(--border, #ddd8cc); background: var(--bg, #ece8e0); color: var(--text-primary, #2a2a28); font-family: Inter, sans-serif; font-size: 13.5px; box-sizing: border-box; margin-bottom: 8px; } .ds-log-form-actions { display: flex; gap: 8px; } .ds-log-form-save { flex: 1; padding: 8px; border-radius: 8px; border: none; background: var(--signal-green, #0f6e56); color: #fff; font-family: Inter, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; } .ds-log-form-cancel { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border2, #ccc7b9); background: transparent; color: var(--text-tertiary, #827d6f); font-family: Inter, sans-serif; font-size: 13px; cursor: pointer; }"
+    },
+    {
+      "name": "Activity Row",
+      "kind": "custom",
+      "description": "Timeline row for a logged activity (call/meeting/email/deal move/contact/quote event). Circular type-colored icon on a connecting vertical line, title/description/meta stack.",
+      "html": "<div class=\"ds-activity-row\"><span class=\"ds-activity-icon\">☎</span><div class=\"ds-activity-body\"><div class=\"ds-activity-title\">Call logged</div><div class=\"ds-activity-desc\">Discussed Q3 renewal terms, they want a 10% volume discount.</div><div class=\"ds-activity-meta\"><span>Marcus Chen</span><span>4 min ago</span></div></div></div>",
+      "css": ".ds-activity-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; border-radius: 10px; } .ds-activity-icon { width: 20px; height: 20px; border-radius: 50%; background: var(--confirmed-green, #14735d); display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; flex-shrink: 0; } .ds-activity-title { font-family: Inter, sans-serif; font-size: 14px; font-weight: 600; color: var(--text-primary, #2a2a28); } .ds-activity-desc { font-family: Inter, sans-serif; font-size: 13px; color: var(--text-secondary, #57534a); margin-top: 2px; } .ds-activity-meta { display: flex; gap: 12px; margin-top: 4px; font-size: 12px; color: var(--text-tertiary, #827d6f); }"
     }
   ],
   "narrative": {
@@ -118,7 +132,8 @@
       { "name": "The Bright Variant Rule", "body": "Dark theme doesn't just invert lightness — where the flat brand accent (--cyan, #0f6e56) would read flat against a dark surface, dark mode swaps in a distinct brighter token (--brand-bright, #6FD9B7) for foregrounded uses like active nav text and the logo.", "section": "colors" },
       { "name": "The One Font Rule", "body": "Every weight and size in the system comes from Inter. Do not introduce a second family for \"editorial\" or \"technical\" flavor — hierarchy is built with size, weight, and letter-spacing, not font mixing.", "section": "typography" },
       { "name": "The Directional Shadow Rule", "body": "An overlay's shadow points toward the edge it emerged from, reinforcing where it came from and that it's temporary. A modal, which has no single edge of origin, gets an omnidirectional shadow instead.", "section": "elevation" },
-      { "name": "The No-Default-Recharts Rule", "body": "Every recharts prop with a visual default (line color, grid, tooltip box, tick font) must be explicitly overridden with a system token before shipping, and every chart declares accessibilityLayer plus a descriptive aria-label. An unstyled recharts chart is an instant tell.", "section": "components" }
+      { "name": "The No-Default-Recharts Rule", "body": "Every recharts prop with a visual default (line color, grid, tooltip box, tick font) must be explicitly overridden with a system token before shipping, and every chart declares accessibilityLayer plus a descriptive aria-label. An unstyled recharts chart is an instant tell.", "section": "components" },
+      { "name": "The Precise Recency Rule", "body": "\"Time ago\" displays must be computed from a precise timestamp (loggedAt/created_at), never from a day-only date field -- a day-only value can never honestly render \"just now\". Keep a separate user-editable date field only when backdating the event itself matters to the feature.", "section": "components" }
     ],
     "dos": [
       "Do route every color through the existing CSS custom-property tokens (var(--bg), var(--cyan), var(--text2), etc.) so new UI themes automatically between light and dark.",
@@ -126,13 +141,15 @@
       "Do reserve Amber/Red exclusively for At-Risk / Critical-Expired states, per the Reserved Alarm Rule.",
       "Do give overlay surfaces (drawers, side panels, modals) a shadow directional to the edge they emerge from; give modals an omnidirectional shadow instead.",
       "Do follow the inline-style + CSS-variable pattern already used in every pages/ and components/ file for new UI — that is the actual, active design system.",
-      "Do override every recharts default (line color, grid, tooltip, tick font) with a system token and set accessibilityLayer before shipping a chart, per Components → Charts (Recharts)."
+      "Do override every recharts default (line color, grid, tooltip, tick font) with a system token and set accessibilityLayer before shipping a chart, per Components → Charts (Recharts).",
+      "Do compute \"time ago\" displays from a precise timestamp (loggedAt/created_at), never a day-only date field, per the Precise Recency Rule."
     ],
     "donts": [
       "Don't add new component classes to App.css. It's a legacy stylesheet from an earlier iteration of the UI: no page or component references any of its .card / .btn / .stat-card / .terminal-panel classes (or most of its keyframes) anymore — only the :root/[data-theme=\"dark\"] variable declarations and the spin keyframe are still live.",
       "Don't introduce a second typeface. Inter carries the entire hierarchy; treat the README's \"Space Mono • DM Sans\" line as stale, not a spec.",
       "Don't copy the hardcoded status-chip hex pairs for new status/severity UI — route new work through the token system instead of replicating that inconsistency.",
-      "Don't use Amber or Red as a general-purpose accent color; they carry risk meaning everywhere else in the product."
+      "Don't use Amber or Red as a general-purpose accent color; they carry risk meaning everywhere else in the product.",
+      "Don't color a routine CRUD action (add/edit/delete) Amber or Red just because it needs some accent — this app's Delete buttons are neutral (--text3); reserve Amber/Red for actual risk states."
     ]
   }
 }

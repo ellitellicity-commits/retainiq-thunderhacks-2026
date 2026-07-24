@@ -210,6 +210,13 @@ Recharts entered the system with the Analytics page's Retention trend card (`fro
 ### AI Co-pilot Panel (signature component)
 A 360px panel that springs in from the right (Framer Motion spring, damping 28 / stiffness 300) with three collapsible sections — Priority Actions, Deal Alerts, Ready to Send — each using the same compact row pattern (`--bg` inset card, `--radius` corners, 1px `--border`) with severity/urgency communicated through a small color dot or `color-mix()`-tinted pill rather than a full-background badge. This restrained, dot-and-tint approach to severity (instead of loud full-color chips) is distinct to this component and worth reusing for any future insight/alert surface.
 
+### Activity & Notification Feed
+Real, database-backed activity logging (`activities_api.py`, `notifications_api.py`) replaced the mock `ACTIVITIES`/`NOTIFICATIONS` arrays. Two patterns worth reusing for any future log-style feature:
+
+- **Inline log-entry form, not a modal.** "+ Log a call" / "+ Log a meeting" in the client drawer's Activity tab open an inline bordered box directly in the flow (`var(--hover)` background, 10px radius, 1px `--border2`) — the exact visual pattern the drawer's existing "+ Add contact" form already established. A short, contextual capture form stays inline; only genuinely separate tasks (the AI email editor, quote line items) earn the fixed-overlay modal pattern used elsewhere.
+- **Type→color mapping stays inside the Reserved Alarm Rule.** Every activity/notification type gets a color from the existing semantic palette (`--blue` for neutral state changes, `--green` for a completed/confirming action, `--amber` only when it directly parallels an existing amber-toned status like the "Draft" quote badge) — Amber and Red are never used for a routine CRUD action. Concretely: `contact_deleted` uses `--text3` (neutral), matching this app's own "Delete" buttons, which are gray, not red — deleting a contact isn't a churn-risk signal, and Red's reserved for At-Risk/Critical-Expired.
+- **`loggedAt` (a precise timestamp) drives "time ago" displays; `date` (day-only) is for user-facing "which day did this happen" context.** A day-only value can never honestly render "just now" — computing relative time from it made a call logged seconds ago read as "18 hours ago." Any new loggable-event feature needs both: a precise system timestamp for recency display, and a separate user-editable date field if backdating matters to the feature.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -219,8 +226,10 @@ A 360px panel that springs in from the right (Framer Motion spring, damping 28 /
 - **Do** give overlay surfaces (drawers, side panels, modals) a shadow directional to the edge they emerge from; give modals an omnidirectional shadow instead.
 - **Do** follow the inline-style + CSS-variable pattern already used in every `pages/` and `components/` file for new UI — that is the actual, active design system.
 - **Do** override every recharts default (line color, grid, tooltip, tick font) with a system token and set `accessibilityLayer` before shipping a chart, per Components → Charts (Recharts).
+- **Do** compute "time ago" displays from a precise timestamp (`loggedAt`/`created_at`), never from a day-only date field, per the Activity & Notification Feed pattern.
 
 ### Don't:
+- **Don't** color a routine CRUD action (add/edit/delete) Amber or Red just because it needs *some* accent — delete actions in this app are neutral (`--text3`), matching the existing Delete buttons; reserve Amber/Red for actual risk states, per the Reserved Alarm Rule.
 - **Don't** add new component classes to `App.css`. It's a legacy stylesheet from an earlier iteration of the UI: no page or component references any of its `.card` / `.btn` / `.stat-card` / `.terminal-panel` classes (or most of its keyframes) anymore — only the `:root`/`[data-theme="dark"]` variable declarations and the `spin` keyframe are still live. Writing new classes there will silently do nothing.
 - **Don't** introduce a second typeface. Inter carries the entire hierarchy; treat the README's "Space Mono • DM Sans" line as stale, not a spec.
 - **Don't** copy the hardcoded status-chip hex pairs for new status/severity UI — route new work through the token system instead of replicating that inconsistency.
