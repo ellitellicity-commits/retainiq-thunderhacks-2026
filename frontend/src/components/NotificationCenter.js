@@ -23,7 +23,17 @@ export default function NotificationCenter({ API }) {
   const unread = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
-    fetch(`${API}/api/db/notifications`).then(r => r.json()).then(d => setNotifications(Array.isArray(d) ? d : [])).catch(() => setNotifications([]));
+    const loadNotifications = () => {
+      fetch(`${API}/api/db/notifications`).then(r => r.json()).then(d => setNotifications(Array.isArray(d) ? d : [])).catch(() => {});
+    };
+    loadNotifications();
+    // Notifications can be created from many places (this drawer, the Pipeline
+    // board, contact edits, quotes) with no single frontend choke point to hook
+    // an event into -- several fire from backend side effects of an existing
+    // PATCH/POST, not a dedicated "log this" call. Polling is what keeps the
+    // bell honest without every future call site needing to remember to signal it.
+    const id = setInterval(loadNotifications, 15000);
+    return () => clearInterval(id);
   }, [API]);
 
   const markAllRead = () => {
