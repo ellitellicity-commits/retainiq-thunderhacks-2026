@@ -1,6 +1,7 @@
 import os, sqlite3
 from datetime import date, datetime, timedelta
 from flask import Blueprint, request, jsonify
+from activities_api import log_activity
 
 deals_bp = Blueprint("deals_bp", __name__)
 
@@ -148,9 +149,12 @@ def update_deal(deal_id):
     for fld in fields:
         if fld in data:
             updates.append(f"{fld}=?"); params.append(data[fld])
+    new_client_id = existing["client_id"]
     if "company" in data:
-        updates.append("client_id=?"); params.append(resolve_client_id(conn, data.get("company")))
-    if "stage" in data and data["stage"] != existing["stage"]:
+        new_client_id = resolve_client_id(conn, data.get("company"))
+        updates.append("client_id=?"); params.append(new_client_id)
+    stage_changed = "stage" in data and data["stage"] != existing["stage"]
+    if stage_changed:
         updates.append("stage_updated_at=?"); params.append(date.today().isoformat())
         st = data["stage"]
         updates.append("status=?"); params.append("won" if st == "Closed-Won" else ("lost" if st == "Closed-Lost" else "open"))
@@ -159,6 +163,16 @@ def update_deal(deal_id):
         conn.execute(f"UPDATE {TABLE} SET {', '.join(updates)} WHERE id=?", params); conn.commit()
     row = conn.execute(f"SELECT * FROM {TABLE} WHERE id=?", (deal_id,)).fetchone()
     conn.close()
+
+    if stage_changed:
+        log_activity(
+            client_id=new_client_id,
+            type="deal_stage_change",
+            notes=f'{existing["company"]}: stage changed from "{existing["stage"]}" to "{data["stage"]}"',
+            done_by=existing["owner"],
+            stage=data["stage"],
+        )
+
     return jsonify(row_to_dict(row))
 
 @deals_bp.route("/api/db/deals/<int:deal_id>", methods=["DELETE"])
