@@ -14,18 +14,22 @@ def get_conn():
 
 
 def ensure_schema():
-    conn = get_conn(); c = conn.cursor()
-    c.execute(f"""CREATE TABLE IF NOT EXISTS {TABLE} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        type TEXT,
-        title TEXT,
-        message TEXT,
-        entity_id INTEGER,
-        read INTEGER DEFAULT 0,
-        created_at TEXT
-    )""")
-    conn.commit(); conn.close()
+    conn = get_conn()
+    try:
+        c = conn.cursor()
+        c.execute(f"""CREATE TABLE IF NOT EXISTS {TABLE} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            type TEXT,
+            title TEXT,
+            message TEXT,
+            entity_id INTEGER,
+            read INTEGER DEFAULT 0,
+            created_at TEXT
+        )""")
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def create_notification(type, title, message, entity_id=None):
@@ -33,29 +37,35 @@ def create_notification(type, title, message, entity_id=None):
     notifications are a single global feed (user_id stays unset), consistent
     with the rest of the app having no per-user scoping."""
     conn = get_conn()
-    conn.execute(
-        f"INSERT INTO {TABLE} (type, title, message, entity_id, read, created_at) VALUES (?, ?, ?, ?, 0, ?)",
-        (type, title, message, entity_id, datetime.utcnow().isoformat() + "Z"),
-    )
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute(
+            f"INSERT INTO {TABLE} (type, title, message, entity_id, read, created_at) VALUES (?, ?, ?, ?, 0, ?)",
+            (type, title, message, entity_id, datetime.utcnow().isoformat() + "Z"),
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
 
 @notifications_bp.route("/api/db/notifications", methods=["GET"])
 def list_notifications():
     conn = get_conn()
-    rows = conn.execute(f"SELECT * FROM {TABLE} ORDER BY id DESC LIMIT 50").fetchall()
-    conn.close()
+    try:
+        rows = conn.execute(f"SELECT * FROM {TABLE} ORDER BY id DESC LIMIT 50").fetchall()
+    finally:
+        conn.close()
     return jsonify([dict(r) for r in rows])
 
 
 @notifications_bp.route("/api/db/notifications/<int:nid>", methods=["PATCH"])
 def mark_read(nid):
     conn = get_conn()
-    conn.execute(f"UPDATE {TABLE} SET read = 1 WHERE id = ?", (nid,))
-    conn.commit()
-    row = conn.execute(f"SELECT * FROM {TABLE} WHERE id = ?", (nid,)).fetchone()
-    conn.close()
+    try:
+        conn.execute(f"UPDATE {TABLE} SET read = 1 WHERE id = ?", (nid,))
+        conn.commit()
+        row = conn.execute(f"SELECT * FROM {TABLE} WHERE id = ?", (nid,)).fetchone()
+    finally:
+        conn.close()
     if not row:
         return jsonify({"error": "not found"}), 404
     return jsonify(dict(row))
@@ -64,9 +74,11 @@ def mark_read(nid):
 @notifications_bp.route("/api/db/notifications/mark-all-read", methods=["PATCH"])
 def mark_all_read():
     conn = get_conn()
-    conn.execute(f"UPDATE {TABLE} SET read = 1 WHERE read = 0")
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute(f"UPDATE {TABLE} SET read = 1 WHERE read = 0")
+        conn.commit()
+    finally:
+        conn.close()
     return jsonify({"ok": True})
 
 

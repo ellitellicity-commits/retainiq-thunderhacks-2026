@@ -27,20 +27,24 @@ def get_conn():
 
 
 def ensure_schema():
-    conn = get_conn(); c = conn.cursor()
-    c.execute(f"""CREATE TABLE IF NOT EXISTS {TABLE} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        client_id INTEGER NOT NULL,
-        type TEXT, title TEXT, notes TEXT, date TEXT, done_by TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (client_id) REFERENCES clients(id)
-    )""")
-    # Migration for DBs created before the title column existed.
+    conn = get_conn()
     try:
-        c.execute(f"ALTER TABLE {TABLE} ADD COLUMN title TEXT")
-    except sqlite3.OperationalError:
-        pass
-    conn.commit(); conn.close()
+        c = conn.cursor()
+        c.execute(f"""CREATE TABLE IF NOT EXISTS {TABLE} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            client_id INTEGER NOT NULL,
+            type TEXT, title TEXT, notes TEXT, date TEXT, done_by TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (client_id) REFERENCES clients(id)
+        )""")
+        # Migration for DBs created before the title column existed.
+        try:
+            c.execute(f"ALTER TABLE {TABLE} ADD COLUMN title TEXT")
+        except sqlite3.OperationalError:
+            pass
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def _default_title(type, ctx):
@@ -116,13 +120,15 @@ def log_activity(client_id, type, notes=None, done_by=None, date_=None, notif_me
 def list_activities():
     cid = request.args.get("client_id")
     conn = get_conn()
-    if cid is not None:
-        rows = conn.execute(
-            f"SELECT * FROM {TABLE} WHERE client_id = ? ORDER BY date DESC, id DESC", (cid,)
-        ).fetchall()
-    else:
-        rows = conn.execute(f"SELECT * FROM {TABLE} ORDER BY date DESC, id DESC LIMIT 100").fetchall()
-    conn.close()
+    try:
+        if cid is not None:
+            rows = conn.execute(
+                f"SELECT * FROM {TABLE} WHERE client_id = ? ORDER BY date DESC, id DESC", (cid,)
+            ).fetchall()
+        else:
+            rows = conn.execute(f"SELECT * FROM {TABLE} ORDER BY date DESC, id DESC LIMIT 100").fetchall()
+    finally:
+        conn.close()
     return jsonify([
         {
             "id": r["id"],
@@ -154,8 +160,10 @@ def create_activity():
     if not activity_id:
         return jsonify({"error": "activity was not persisted"}), 500
     conn = get_conn()
-    row = conn.execute(f"SELECT * FROM {TABLE} WHERE id = ?", (activity_id,)).fetchone()
-    conn.close()
+    try:
+        row = conn.execute(f"SELECT * FROM {TABLE} WHERE id = ?", (activity_id,)).fetchone()
+    finally:
+        conn.close()
     if not row:
         return jsonify({"error": "activity was not persisted"}), 500
     return jsonify({

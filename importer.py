@@ -8,7 +8,10 @@ from datetime import datetime, date
 
 load_dotenv()
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+# Explicit, tight bound instead of the SDK's defaults -- see the matching
+# comment in app.py's generate_template_email for why this matters under a
+# single-gunicorn-worker deployment.
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"), timeout=10.0, max_retries=1)
 
 KNOWN_FIELDS = {
     "company_name": ["company", "client", "organization", "account", "business", "firm", "company name", "client name"],

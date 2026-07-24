@@ -45,7 +45,12 @@ def generate_template_email(name, plan, spend, days_no_contact, risk_score, days
     sender = account_manager or random.choice(["Sarah Mitchell", "James Okafor", "Priya Sharma", "Marcus Chen"])
 
     try:
-        client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+        # Explicit, tight bound instead of the SDK's defaults (connect=5s,
+        # read/write/pool=60s each, retried up to 2x -- worst case ~195s of
+        # a single-request block). Production runs one gunicorn sync worker,
+        # so an unbounded external call here can stall every other endpoint
+        # behind it for as long as Groq takes to respond or fail.
+        client = Groq(api_key=os.environ.get("GROQ_API_KEY"), timeout=10.0, max_retries=1)
 
         urgency = "CRITICAL - contract has expired" if days_until_expiry and days_until_expiry < 0 else f"expiring in {days_until_expiry} days" if days_until_expiry and days_until_expiry <= 30 else f"expiring in {days_until_expiry} days" if days_until_expiry else "approaching renewal"
 
@@ -424,32 +429,34 @@ def reset_data():
 def get_db_clients():
     from datetime import datetime
     conn = get_db()
-    c = conn.cursor()
-    
-    today = datetime.today()
-    
-    c.execute("""
-        SELECT 
-            cl.id,
-            cl.company_name,
-            cl.industry,
-            cl.country,
-            co.software,
-            co.vendor,
-            co.start_date,
-            co.expiry_date,
-            co.value as contract_value,
-            co.assigned_to,
-            co.status,
-            co.last_contact as lc
-        FROM clients cl
-        LEFT JOIN contracts co ON cl.id = co.client_id
-        ORDER BY co.expiry_date ASC
-    """)
-    
-    rows = c.fetchall()
-    conn.close()
-    
+    try:
+        c = conn.cursor()
+
+        today = datetime.today()
+
+        c.execute("""
+            SELECT
+                cl.id,
+                cl.company_name,
+                cl.industry,
+                cl.country,
+                co.software,
+                co.vendor,
+                co.start_date,
+                co.expiry_date,
+                co.value as contract_value,
+                co.assigned_to,
+                co.status,
+                co.last_contact as lc
+            FROM clients cl
+            LEFT JOIN contracts co ON cl.id = co.client_id
+            ORDER BY co.expiry_date ASC
+        """)
+
+        rows = c.fetchall()
+    finally:
+        conn.close()
+
     clients = []
     for row in rows:
         row = dict(row)
@@ -503,29 +510,32 @@ def get_db_clients():
 def get_db_stats():
     from datetime import datetime
     conn = get_db()
-    c = conn.cursor()
-    today = datetime.today()
-    
-    c.execute("SELECT COUNT(*) as total FROM clients")
-    total = c.fetchone()['total']
-    
-    c.execute("SELECT COUNT(*) as total, SUM(value) as total_value FROM contracts")
-    contracts = c.fetchone()
-    
-    c.execute("SELECT expiry_date, value FROM contracts WHERE expiry_date IS NOT NULL")
-    all_contracts = c.fetchall()
-    
+    try:
+        c = conn.cursor()
+        today = datetime.today()
+
+        c.execute("SELECT COUNT(*) as total FROM clients")
+        total = c.fetchone()['total']
+
+        c.execute("SELECT COUNT(*) as total, SUM(value) as total_value FROM contracts")
+        contracts = c.fetchone()
+
+        c.execute("SELECT expiry_date, value FROM contracts WHERE expiry_date IS NOT NULL")
+        all_contracts = c.fetchall()
+    finally:
+        conn.close()
+
     expired = critical = at_risk = active = 0
     value_at_risk = 0
     expiring_30 = 0
     expiring_90 = 0
-    
+
     for contract in all_contracts:
         try:
             expiry = datetime.strptime(contract['expiry_date'], '%Y-%m-%d')
             days = (expiry - today).days
             val = contract['value'] or 0
-            
+
             if days < 0:
                 expired += 1
                 value_at_risk += val
@@ -542,9 +552,7 @@ def get_db_stats():
                 active += 1
         except:
             pass
-    
-    conn.close()
-    
+
     return jsonify({
         "total_customers": total,
         "high_risk_count": expired + critical,
@@ -567,19 +575,21 @@ def get_retention_history():
     from datetime import datetime
 
     conn = get_db()
-    # Defensive daily check: cheap no-op if today's row already exists,
-    # otherwise records it. Covers the case where the process has been
-    # warm since before midnight and no restart has happened to re-run
-    # seed_if_empty()'s startup check.
-    ensure_todays_retention_snapshot(conn)
+    try:
+        # Defensive daily check: cheap no-op if today's row already exists,
+        # otherwise records it. Covers the case where the process has been
+        # warm since before midnight and no restart has happened to re-run
+        # seed_if_empty()'s startup check.
+        ensure_todays_retention_snapshot(conn)
+
+        c = conn.cursor()
+        c.execute("SELECT snapshot_date, retention_pct FROM retention_snapshots ORDER BY snapshot_date ASC")
+        rows = c.fetchall()
+    finally:
+        conn.close()
 
     months_param = request.args.get("months", "3")
     n = {"3": 3, "6": 6, "12": 12}.get(months_param, 3)
-
-    c = conn.cursor()
-    c.execute("SELECT snapshot_date, retention_pct FROM retention_snapshots ORDER BY snapshot_date ASC")
-    rows = c.fetchall()
-    conn.close()
 
     # Bucket by calendar month, keeping the latest snapshot per month
     # (rows are ASC by date, so the last write per key wins). This is how
