@@ -8,7 +8,7 @@ const typeConfig = {
   deal_stage_change: { color: "var(--blue)", icon: "→" },
   contact_added: { color: "var(--green)", icon: "＋" },
   contact_updated: { color: "var(--blue)", icon: "✎" },
-  contact_deleted: { color: "var(--red)", icon: "×" },
+  contact_deleted: { color: "var(--text3)", icon: "×" },
   quote_created: { color: "var(--amber)", icon: "▤" },
   quote_sent: { color: "var(--green)", icon: "▤" },
 };
