@@ -96,6 +96,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             client_id INTEGER NOT NULL,
             type TEXT,
+            title TEXT,
             notes TEXT,
             date TEXT,
             done_by TEXT,

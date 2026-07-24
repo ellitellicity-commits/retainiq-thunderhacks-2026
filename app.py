@@ -15,6 +15,11 @@ app.register_blueprint(quotes_bp)
 from deals_api import deals_bp
 app.register_blueprint(deals_bp)
 
+from activities_api import activities_bp
+app.register_blueprint(activities_bp)
+from notifications_api import notifications_bp
+app.register_blueprint(notifications_bp)
+
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
