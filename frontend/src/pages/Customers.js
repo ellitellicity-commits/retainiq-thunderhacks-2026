@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import ActivityTimeline from "../components/ActivityTimeline";
 import NoteEditor from "../components/NoteEditor";
-import { ACTIVITIES, NOTES } from "../data/mockData";
+import { NOTES } from "../data/mockData";
 
 const fmtMoney = (v) =>
   v === null || v === undefined || v === "" ? "—" : "$" + Number(v).toLocaleString();
@@ -59,6 +59,12 @@ export default function Clients({ API, pageAction, clearAction }) {
   // Quotes (read-only, from Pipeline)
   const [quotes, setQuotes] = useState([]);
   const [quotesLoading, setQuotesLoading] = useState(false);
+
+  // Activities
+  const [activities, setActivities] = useState([]);
+  const [activitiesLoading, setActivitiesLoading] = useState(false);
+  const [logForm, setLogForm] = useState(null);
+  const [logSaving, setLogSaving] = useState(false);
 
   // Drawer tabs
   const [drawerTab, setDrawerTab] = useState("details");
@@ -161,17 +167,65 @@ export default function Clients({ API, pageAction, clearAction }) {
       .finally(() => setQuotesLoading(false));
   };
 
+  const loadActivities = (clientId) => {
+    setActivitiesLoading(true);
+    fetch(`${API}/api/db/activities?client_id=${clientId}`)
+      .then(r => r.json())
+      .then(d => setActivities(Array.isArray(d) ? d : []))
+      .catch(() => setActivities([]))
+      .finally(() => setActivitiesLoading(false));
+  };
+
   const openClient = (c) => {
     setSelected(c); setEmail(null);
     setContacts([]); setContactForm(null); setSelectedContactId("");
-    setQuotes([]); setDrawerTab("details");
+    setQuotes([]); setActivities([]); setLogForm(null); setDrawerTab("details");
     loadContacts(c.id);
     loadQuotes(nameOf(c));
+    loadActivities(c.id);
   };
   const closeDrawer = () => {
     setSelected(null); setEmail(null); setEmailLoading(false);
     setContacts([]); setContactForm(null); setSelectedContactId("");
-    setQuotes([]);
+    setQuotes([]); setActivities([]); setLogForm(null);
+  };
+
+  const openLogForm = (type) => setLogForm({ type, notes: "", date: new Date().toISOString().slice(0, 10) });
+
+  const saveLog = () => {
+    if (!logForm || !selected) return;
+    setLogSaving(true);
+    fetch(`${API}/api/db/activities`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: selected.id,
+        type: logForm.type,
+        notes: logForm.notes,
+        date: logForm.date,
+        done_by: selected.account_manager || undefined,
+      }),
+    })
+      .then(r => r.json())
+      .then(() => { setLogForm(null); loadActivities(selected.id); })
+      .catch(() => {})
+      .finally(() => setLogSaving(false));
+  };
+
+  const logEmailDrafted = () => {
+    if (!selected || !email) return;
+    fetch(`${API}/api/db/activities`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: selected.id,
+        type: "email",
+        notes: `Subject: ${email.subject}`,
+        done_by: selected.account_manager || undefined,
+      }),
+    })
+      .then(() => loadActivities(selected.id))
+      .catch(() => {});
   };
 
   const openAddContact = () => setContactForm({ name: "", title: "", email: "", phone: "", is_primary: contacts.length === 0 });
@@ -235,12 +289,13 @@ export default function Clients({ API, pageAction, clearAction }) {
       .finally(() => setEmailLoading(false));
   };
 
-  const copyEmail = () => { if (email) navigator.clipboard.writeText(`Subject: ${email.subject}\n\n${email.body}`); };
+  const copyEmail = () => { if (email) { navigator.clipboard.writeText(`Subject: ${email.subject}\n\n${email.body}`); logEmailDrafted(); } };
   const openInMail = () => {
     if (!email) return;
     const rc = contacts.find(c => String(c.id) === selectedContactId);
     const to = rc && rc.email ? rc.email : "";
     window.location.href = "mailto:" + to + "?subject=" + encodeURIComponent(email.subject) + "&body=" + encodeURIComponent(email.body);
+    logEmailDrafted();
   };
 
   const pill = { padding: "7px 16px", borderRadius: 999, fontFamily: "Inter", fontSize: 14, fontWeight: 500, cursor: "pointer" };
@@ -299,7 +354,36 @@ export default function Clients({ API, pageAction, clearAction }) {
 
           {drawerTab === "activity" && (
             <div style={{ marginTop: 18 }}>
-              <ActivityTimeline activities={ACTIVITIES.filter(a => a.clientId === selected.id || a.clientId <= 2)} maxItems={12} />
+              <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+                <button onClick={() => openLogForm("call")}
+                  style={{ background: "transparent", border: "1px solid var(--border2)", color: "var(--cyan)", fontFamily: "Inter", fontSize: 13, fontWeight: 600, padding: "5px 12px", borderRadius: 8, cursor: "pointer" }}>+ Log a call</button>
+                <button onClick={() => openLogForm("meeting")}
+                  style={{ background: "transparent", border: "1px solid var(--border2)", color: "var(--cyan)", fontFamily: "Inter", fontSize: 13, fontWeight: 600, padding: "5px 12px", borderRadius: 8, cursor: "pointer" }}>+ Log a meeting</button>
+              </div>
+
+              {logForm && (
+                <div style={{ border: "1px solid var(--border2)", borderRadius: 10, padding: "12px 13px", marginBottom: 14, background: "var(--hover)" }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>
+                    {logForm.type === "call" ? "Log a call" : "Log a meeting"}
+                  </div>
+                  <textarea style={{ ...cfield, minHeight: 70, resize: "vertical" }} placeholder="Notes"
+                    value={logForm.notes} onChange={(e) => setLogForm({ ...logForm, notes: e.target.value })} />
+                  <input type="date" style={cfield} value={logForm.date}
+                    onChange={(e) => setLogForm({ ...logForm, date: e.target.value })} />
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={saveLog} disabled={logSaving}
+                      style={{ flex: 1, padding: "8px", borderRadius: 8, border: "none", background: "var(--cyan)", color: "#fff", fontFamily: "Inter", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: logSaving ? 0.7 : 1 }}>
+                      {logSaving ? "Saving…" : "Save"}
+                    </button>
+                    <button onClick={() => setLogForm(null)}
+                      style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid var(--border2)", background: "transparent", color: "var(--text3)", fontFamily: "Inter", fontSize: 13, cursor: "pointer" }}>Cancel</button>
+                  </div>
+                </div>
+              )}
+
+              {activitiesLoading
+                ? <div style={{ fontSize: 13, color: "var(--text3)" }}>Loading…</div>
+                : <ActivityTimeline activities={activities} maxItems={12} />}
             </div>
           )}
 
