@@ -48,6 +48,15 @@ def _default_title(type, ctx):
     return fn(ctx) if fn else type.replace("_", " ").capitalize()
 
 
+def _iso_utc(sqlite_ts):
+    """SQLite's CURRENT_TIMESTAMP is UTC but formatted as 'YYYY-MM-DD HH:MM:SS'
+    with no timezone marker. Without an explicit 'Z', JS parses a 'T'-joined
+    string as local time -- so this makes the UTC-ness explicit."""
+    if not sqlite_ts:
+        return None
+    return sqlite_ts.replace(" ", "T") + "Z"
+
+
 def _fallback_done_by(conn, client_id):
     if not client_id:
         return None
@@ -113,6 +122,7 @@ def list_activities():
             "title": r["title"],
             "description": r["notes"],
             "date": r["date"],
+            "loggedAt": _iso_utc(r["created_at"]),
             "user": r["done_by"],
         }
         for r in rows
@@ -141,7 +151,8 @@ def create_activity():
         return jsonify({"error": "activity was not persisted"}), 500
     return jsonify({
         "id": row["id"], "clientId": row["client_id"], "type": row["type"],
-        "title": row["title"], "description": row["notes"], "date": row["date"], "user": row["done_by"],
+        "title": row["title"], "description": row["notes"], "date": row["date"],
+        "loggedAt": _iso_utc(row["created_at"]), "user": row["done_by"],
     })
 
 

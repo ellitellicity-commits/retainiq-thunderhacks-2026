@@ -5,6 +5,12 @@ const typeConfig = {
   call: { color: "var(--green)", icon: "☎" },
   meeting: { color: "var(--purple)", icon: "📅" },
   note: { color: "var(--amber)", icon: "✏" },
+  deal_stage_change: { color: "var(--blue)", icon: "→" },
+  contact_added: { color: "var(--green)", icon: "＋" },
+  contact_updated: { color: "var(--blue)", icon: "✎" },
+  contact_deleted: { color: "var(--red)", icon: "×" },
+  quote_created: { color: "var(--amber)", icon: "▤" },
+  quote_sent: { color: "var(--green)", icon: "▤" },
 };
 
 const filters = [
@@ -12,12 +18,17 @@ const filters = [
   { key: "email", label: "Emails" },
   { key: "call", label: "Calls" },
   { key: "meeting", label: "Meetings" },
-  { key: "note", label: "Notes" },
+  { key: "deal_stage_change", label: "Deals" },
+  { key: "quote_created", label: "Quotes" },
 ];
 
 function getRelativeTime(dateStr) {
   const now = new Date();
-  const date = new Date(dateStr);
+  // A bare "YYYY-MM-DD" string parses as UTC midnight per spec, which can
+  // read many hours off from "now" depending on the browser's timezone.
+  // Appending a time makes it parse as local midnight instead.
+  const hasTime = /\d{2}:\d{2}/.test(dateStr || "");
+  const date = new Date(hasTime ? dateStr : `${dateStr}T00:00:00`);
   const diffMs = now - date;
   const diffSec = Math.floor(diffMs / 1000);
   const diffMin = Math.floor(diffSec / 60);
@@ -186,7 +197,7 @@ export default function ActivityTimeline({ activities = [], maxItems = 10 }) {
                   }}
                 >
                   {activity.user && <span>{activity.user}</span>}
-                  {activity.date && <span>{getRelativeTime(activity.date)}</span>}
+                  {(activity.loggedAt || activity.date) && <span>{getRelativeTime(activity.loggedAt || activity.date)}</span>}
                   {activity.duration && <span>{activity.duration}</span>}
                 </div>
               </div>

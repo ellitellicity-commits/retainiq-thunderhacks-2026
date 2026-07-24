@@ -35,7 +35,7 @@ def create_notification(type, title, message, entity_id=None):
     conn = get_conn()
     conn.execute(
         f"INSERT INTO {TABLE} (type, title, message, entity_id, read, created_at) VALUES (?, ?, ?, ?, 0, ?)",
-        (type, title, message, entity_id, datetime.utcnow().isoformat()),
+        (type, title, message, entity_id, datetime.utcnow().isoformat() + "Z"),
     )
     conn.commit()
     conn.close()
