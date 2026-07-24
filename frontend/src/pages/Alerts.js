@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const PROB = { "New Leads": 0.10, "Qualified": 0.25, "Demo": 0.40, "Quote sent": 0.60, "Negotiation": 0.80 };
 const OPEN_STAGES = ["New Leads", "Qualified", "Demo", "Quote sent", "Negotiation"];
@@ -8,12 +9,29 @@ const fmtBig = (v) => { v = Number(v || 0); return v >= 1e6 ? "$" + (v / 1e6).to
 const card = { background: "var(--card)", border: "1px solid var(--border2)", borderRadius: 12, padding: "16px 18px" };
 const cardTitle = { fontSize: 14, fontWeight: 600, color: "var(--text)", marginBottom: 16 };
 
+const tickStyle = { fill: "var(--text3)", fontSize: 12, fontFamily: "Inter, sans-serif" };
+
+function RetentionTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div style={{ background: "var(--card)", border: "1px solid var(--border2)", borderRadius: 8, padding: "8px 12px", fontFamily: "Inter, sans-serif", fontSize: 12, boxShadow: "var(--shadow)" }}>
+      <div style={{ color: "var(--text3)", marginBottom: 2 }}>{label}</div>
+      <div style={{ fontWeight: 600, color: "var(--brand-bright)" }}>{payload[0].value}% retained</div>
+    </div>
+  );
+}
+
 export default function Analytics({ API }) {
   const [deals, setDeals] = useState([]);
+  const [retention, setRetention] = useState([]);
   const [horizon, setHorizon] = useState("3");
 
   const refetch = () => fetch(`${API}/api/db/deals`).then(r => r.json()).then(setDeals).catch(() => setDeals([]));
   useEffect(() => { refetch(); }, [API]);
+
+  useEffect(() => {
+    fetch(`${API}/api/db/retention-history?months=${horizon}`).then(r => r.json()).then(setRetention).catch(() => setRetention([]));
+  }, [API, horizon]);
 
   const open = deals.filter(d => d.status === "open");
   const won = deals.filter(d => d.status === "won");
@@ -46,6 +64,10 @@ export default function Analytics({ API }) {
   const funnelShades = ["var(--cyan)", "#1D9E75", "#3DB390", "#5DCAA5", "var(--brand-bright)"];
   const funnelWidths = [100, 86, 70, 55, 42];
 
+  const retentionVals = retention.map(r => r.retention_pct);
+  const minRetention = retentionVals.length ? Math.min(...retentionVals) : 0;
+  const retentionYDomain = [Math.max(0, Math.floor((minRetention - 5) / 5) * 5), 100];
+
   const byOwner = {};
   open.forEach(d => { const o = d.owner || "Unassigned"; byOwner[o] = (byOwner[o] || 0) + (d.value || 0); });
   const reps = Object.entries(byOwner).map(([owner, val]) => ({ owner, val })).sort((a, b) => b.val - a.val);
@@ -75,9 +97,9 @@ export default function Analytics({ API }) {
         </div>
         <select value={horizon} onChange={(e) => setHorizon(e.target.value)}
           style={{ background: "var(--card)", border: "1px solid var(--border2)", color: "var(--text)", fontFamily: "Inter", fontSize: 13, padding: "9px 12px", borderRadius: 9, cursor: "pointer", outline: "none" }}>
-          <option value="3">Forecast: next 3 months</option>
-          <option value="6">Forecast: next 6 months</option>
-          <option value="12">Forecast: next 12 months</option>
+          <option value="3">Window: 3 months</option>
+          <option value="6">Window: 6 months</option>
+          <option value="12">Window: 12 months</option>
         </select>
       </div>
 
@@ -113,7 +135,7 @@ export default function Analytics({ API }) {
             )}
           </div>
 
-          <div style={card}>
+          <div style={{ ...card, marginBottom: 16 }}>
             <div style={cardTitle}>Pipeline funnel</div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 7 }}>
               {funnel.map((f, i) => (
@@ -122,6 +144,34 @@ export default function Analytics({ API }) {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div style={card}>
+            <div style={cardTitle}>Retention trend</div>
+            {retention.length > 0 ? (
+              <ResponsiveContainer width="100%" height={180}>
+                <AreaChart data={retention} margin={{ top: 6, right: 24, left: 0, bottom: 0 }}
+                  accessibilityLayer role="img" aria-label={`Retention trend over the last ${horizon} months, ending at ${retention[retention.length - 1]?.retention_pct}%`}>
+                  <defs>
+                    <linearGradient id="retentionFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--brand-bright)" stopOpacity={0.28} />
+                      <stop offset="100%" stopColor="var(--brand-bright)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} stroke="var(--border)" />
+                  <XAxis dataKey="month" tick={tickStyle} axisLine={{ stroke: "var(--border)" }} tickLine={false}
+                    interval={horizon === "12" ? 1 : 0} />
+                  <YAxis domain={retentionYDomain} tick={tickStyle} axisLine={false} tickLine={false} width={38}
+                    tickFormatter={(v) => v + "%"} />
+                  <Tooltip content={<RetentionTooltip />} cursor={{ stroke: "var(--border2)", strokeWidth: 1 }} />
+                  <Area type="monotone" dataKey="retention_pct" stroke="var(--brand-bright)" strokeWidth={2.5}
+                    fill="url(#retentionFill)" dot={{ r: 3, fill: "var(--brand-bright)", stroke: "var(--card)", strokeWidth: 2 }}
+                    activeDot={{ r: 5, fill: "var(--brand-bright)", stroke: "var(--card)", strokeWidth: 2 }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ fontSize: 13, color: "var(--text3)", padding: "24px 0" }}>No retention snapshots recorded yet. This fills in automatically once client contract data is available.</div>
+            )}
           </div>
         </div>
 

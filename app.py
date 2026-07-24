@@ -3,7 +3,7 @@ import random
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from model import load_and_train, get_dataframe, score_new_customer, _assign_stage
-from database import get_db, init_db, seed_if_empty
+from database import get_db, init_db, seed_if_empty, ensure_todays_retention_snapshot
 
 app = Flask(__name__)
 from contacts_api import contacts_bp
@@ -555,6 +555,42 @@ def get_db_stats():
             "Active": active
         }
     })
+
+
+@app.route("/api/db/retention-history")
+def get_retention_history():
+    from datetime import datetime
+
+    conn = get_db()
+    # Defensive daily check: cheap no-op if today's row already exists,
+    # otherwise records it. Covers the case where the process has been
+    # warm since before midnight and no restart has happened to re-run
+    # seed_if_empty()'s startup check.
+    ensure_todays_retention_snapshot(conn)
+
+    months_param = request.args.get("months", "3")
+    n = {"3": 3, "6": 6, "12": 12}.get(months_param, 3)
+
+    c = conn.cursor()
+    c.execute("SELECT snapshot_date, retention_pct FROM retention_snapshots ORDER BY snapshot_date ASC")
+    rows = c.fetchall()
+    conn.close()
+
+    # Bucket by calendar month, keeping the latest snapshot per month
+    # (rows are ASC by date, so the last write per key wins). This is how
+    # a 'live' snapshot for the current month naturally supersedes that
+    # month's 'seed' estimate with no extra branching.
+    by_month = {}
+    for row in rows:
+        d = datetime.strptime(row["snapshot_date"], "%Y-%m-%d")
+        by_month[(d.year, d.month)] = (d, row["retention_pct"])
+
+    ordered_keys = sorted(by_month.keys())[-n:]
+    result = [
+        {"month": by_month[k][0].strftime("%b '%y"), "retention_pct": round(by_month[k][1], 1)}
+        for k in ordered_keys
+    ]
+    return jsonify(result)
 
 
 @app.route("/api/db/import", methods=["POST"])
