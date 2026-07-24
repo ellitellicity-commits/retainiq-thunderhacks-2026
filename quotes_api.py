@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 import sqlite3, os
 from datetime import datetime
+from activities_api import log_activity
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "retainiq.db")
@@ -106,9 +107,10 @@ def save_quote(deal_id):
 
     c.execute("UPDATE pipeline_deals SET quote_discount = ? WHERE id = ?", (discount, deal_id))
 
-    row = c.execute("SELECT quote_status FROM pipeline_deals WHERE id = ?", (deal_id,)).fetchone()
-    status = row["quote_status"] if row and row["quote_status"] else "none"
-    if status == "none" and items:
+    deal = c.execute("SELECT company, client_id, owner, quote_status FROM pipeline_deals WHERE id = ?", (deal_id,)).fetchone()
+    status = deal["quote_status"] if deal and deal["quote_status"] else "none"
+    just_created = status == "none" and items
+    if just_created:
         c.execute("UPDATE pipeline_deals SET quote_status = 'draft' WHERE id = ?", (deal_id,))
         status = "draft"
 
@@ -118,6 +120,15 @@ def save_quote(deal_id):
         (deal_id,),
     ).fetchall()
     conn.close()
+
+    if just_created and deal:
+        log_activity(
+            client_id=deal["client_id"],
+            type="quote_created",
+            notes=f"{deal['company']}: {len(items)} line item(s)",
+            done_by=deal["owner"],
+        )
+
     return jsonify({
         "deal_id": deal_id,
         "discount": discount,
@@ -130,7 +141,7 @@ def save_quote(deal_id):
 def send_quote(deal_id):
     conn = get_conn()
     c = conn.cursor()
-    row = c.execute("SELECT quote_discount FROM pipeline_deals WHERE id = ?", (deal_id,)).fetchone()
+    row = c.execute("SELECT quote_discount, company, client_id, owner FROM pipeline_deals WHERE id = ?", (deal_id,)).fetchone()
     discount = row["quote_discount"] if row and row["quote_discount"] is not None else 0
     subtotal, total, _ = quote_total_for(c, deal_id, discount)
     now = datetime.utcnow().strftime("%Y-%m-%d")
@@ -140,6 +151,15 @@ def send_quote(deal_id):
     )
     conn.commit()
     conn.close()
+
+    if row:
+        log_activity(
+            client_id=row["client_id"],
+            type="quote_sent",
+            notes=f"{row['company']}: total ${total:,.0f}",
+            done_by=row["owner"],
+        )
+
     return jsonify({
         "deal_id": deal_id,
         "subtotal": subtotal,
