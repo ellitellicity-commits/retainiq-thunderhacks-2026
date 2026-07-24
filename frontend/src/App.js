@@ -217,7 +217,7 @@ export default function App() {
 
       <main style={{ flex: 1, minWidth: 0, height: "100%", overflowY: "auto", padding: "28px 34px", position: "relative", paddingTop: 16 }}>
         <div style={{ position: "sticky", top: 0, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, zIndex: 10, paddingBottom: 8 }}>
-          <NotificationCenter />
+          <NotificationCenter API={API} />
           <button onClick={() => setCopilotOpen(o => !o)}
             style={{ background: copilotOpen ? "var(--cyan)" : "transparent", border: "1px solid var(--border2)", color: copilotOpen ? "#fff" : "var(--text2)", cursor: "pointer", padding: "6px 12px", borderRadius: 8, display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 500 }}
             onMouseEnter={e => { if (!copilotOpen) e.currentTarget.style.background = "var(--hover2)"; }}
