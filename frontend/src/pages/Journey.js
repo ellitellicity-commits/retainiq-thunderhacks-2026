@@ -30,7 +30,7 @@ const field = { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1p
 const lbl = { fontSize: 12.5, color: "var(--text3)", marginBottom: 4, marginTop: 14 };
 const qfield = { padding: "8px 10px", borderRadius: 7, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontFamily: "Inter", fontSize: 13.5, outline: "none", boxSizing: "border-box" };
 
-export default function Pipeline({ API, pageAction, clearAction }) {
+export default function Pipeline({ API, pageAction, clearAction, openDealId, clearOpenDeal }) {
   const [deals, setDeals] = useState([]);
   const [draggingId, setDraggingId] = useState(null);
   const [overStage, setOverStage] = useState(null);
@@ -64,6 +64,16 @@ export default function Pipeline({ API, pageAction, clearAction }) {
       if (clearAction) clearAction();
     }
   }, [pageAction, clearAction]);
+
+  useEffect(() => {
+    if (openDealId == null) return;
+    const deal = deals.find(d => d.id === openDealId);
+    if (deal) {
+      openDeal(deal);
+      if (clearOpenDeal) clearOpenDeal();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openDealId, deals]);
 
   const openValue = deals.filter(d => d.status === "open").reduce((s, d) => s + (d.value || 0), 0);
 

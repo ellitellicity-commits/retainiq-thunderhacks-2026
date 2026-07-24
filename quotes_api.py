@@ -31,6 +31,7 @@ def ensure_schema():
     for ddl in [
         "ALTER TABLE pipeline_deals ADD COLUMN quote_discount REAL DEFAULT 0",
         "ALTER TABLE pipeline_deals ADD COLUMN quote_status TEXT DEFAULT 'none'",
+        "ALTER TABLE pipeline_deals ADD COLUMN quote_sent_at TEXT",
     ]:
         try:
             c.execute(ddl)
@@ -146,8 +147,8 @@ def send_quote(deal_id):
     subtotal, total, _ = quote_total_for(c, deal_id, discount)
     now = datetime.utcnow().strftime("%Y-%m-%d")
     c.execute(
-        "UPDATE pipeline_deals SET value = ?, stage = ?, stage_updated_at = ?, status = ?, quote_status = ? WHERE id = ?",
-        (total, "Quote sent", now, "open", "sent", deal_id),
+        "UPDATE pipeline_deals SET value = ?, stage = ?, stage_updated_at = ?, status = ?, quote_status = ?, quote_sent_at = ? WHERE id = ?",
+        (total, "Quote sent", now, "open", "sent", now, deal_id),
     )
     conn.commit()
     conn.close()
@@ -171,17 +172,24 @@ def send_quote(deal_id):
 
 
 @quotes_bp.route("/api/db/quotes", methods=["GET"])
-def quotes_by_company():
+def quotes_list():
+    """List quotes. With ?company=X, scoped to that company (used by the
+    Clients drawer). Without it, returns every quote across every deal
+    (used by the standalone Quotes page)."""
     company = (request.args.get("company") or "").strip()
-    if not company:
-        return jsonify([])
     conn = get_conn()
     c = conn.cursor()
-    deals = c.execute(
-        "SELECT id, company, stage, value, quote_discount, quote_status, expected_close_date, owner "
-        "FROM pipeline_deals WHERE LOWER(TRIM(company)) = LOWER(TRIM(?))",
-        (company,),
-    ).fetchall()
+    if company:
+        deals = c.execute(
+            "SELECT id, company, stage, value, quote_discount, quote_status, quote_sent_at, expected_close_date, owner "
+            "FROM pipeline_deals WHERE LOWER(TRIM(company)) = LOWER(TRIM(?))",
+            (company,),
+        ).fetchall()
+    else:
+        deals = c.execute(
+            "SELECT id, company, stage, value, quote_discount, quote_status, quote_sent_at, expected_close_date, owner "
+            "FROM pipeline_deals"
+        ).fetchall()
     out = []
     for d in deals:
         discount = d["quote_discount"] or 0
@@ -199,6 +207,7 @@ def quotes_by_company():
             "total": total,
             "item_count": item_count,
             "expected_close_date": d["expected_close_date"],
+            "sent_at": d["quote_sent_at"],
             "owner": d["owner"],
         })
     conn.close()

@@ -135,7 +135,8 @@ def init_db():
             status TEXT DEFAULT 'open',
             expected_close_date TEXT,
             quote_discount REAL,
-            quote_status TEXT
+            quote_status TEXT,
+            quote_sent_at TEXT
         )
     ''')
 

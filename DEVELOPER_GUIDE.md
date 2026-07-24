@@ -175,8 +175,9 @@ On startup, `seed_if_empty()` checks if `clients` table is empty:
 |--------|------|-------------|
 | GET | `/api/db/quote/<deal_id>` | Get quote (items + discount + status) for a deal |
 | PUT | `/api/db/quote/<deal_id>` | Save quote (replaces all items). Body: `{items, discount}` |
-| POST | `/api/db/quote/<deal_id>/send` | Mark quote as sent, update deal |
-| GET | `/api/db/quotes?company=X` | Get quotes by company name |
+| POST | `/api/db/quote/<deal_id>/send` | Mark quote as sent, update deal, stamp `quote_sent_at` |
+| GET | `/api/db/quotes?company=X` | Quotes for one company (used by the Clients drawer) |
+| GET | `/api/db/quotes` | Every quote across every deal (used by the standalone Quotes page) |
 
 ---
 
@@ -190,6 +191,7 @@ On startup, `seed_if_empty()` checks if `clients` table is empty:
 | **Clients** | Full CRUD contacts, quote viewing, AI email generation, search/filter/sort | `/api/db/clients`, `/api/db/contacts`, `/api/db/quotes`, `/api/email` |
 | **Contacts** | Full listing with search, filter by company, primary toggle | `/api/db/contacts`, `/api/db/clients` |
 | **Pipeline** | Kanban drag-drop, create/edit/delete deals, quote builder with line items | `/api/db/deals`, `/api/db/quote` |
+| **Quotes** | Standalone list of every quote across every deal, with search + status filter; click-through opens the deal in Pipeline for editing | `/api/db/quotes` |
 | **Analytics** | All charts and metrics computed from real deal data | `/api/db/deals` |
 
 ### Mock Data (Frontend-Only State)

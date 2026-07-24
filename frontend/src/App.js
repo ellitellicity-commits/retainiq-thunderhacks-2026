@@ -6,6 +6,7 @@ import Customers from "./pages/Customers";
 import Contacts from "./pages/Contacts";
 import Alerts from "./pages/Alerts";
 import Journey from "./pages/Journey";
+import Quotes from "./pages/Quotes";
 import CopilotPage from "./pages/CopilotPage";
 import Tasks from "./pages/Tasks";
 import EmailSequences from "./pages/EmailSequences";
@@ -25,6 +26,7 @@ const ICONS = {
   customers: (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.8 19c0-2.9 2.3-5 5.2-5s5.2 2.1 5.2 5"/><path d="M16.5 5.5a3 3 0 0 1 0 5.4"/><path d="M18.5 19c0-2.2-.9-3.9-2.3-4.8"/></svg>),
   contacts: (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="2.6"/><path d="M8 17c0-2 1.8-3.2 4-3.2s4 1.2 4 3.2"/></svg>),
   journey: (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>),
+  quotes: (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v4a1 1 0 0 0 1 1h4"/><line x1="8.5" y1="12.5" x2="15.5" y2="12.5"/><line x1="8.5" y1="16" x2="13" y2="16"/></svg>),
   alerts: (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 21V11M12 21V4M19 21v-6"/></svg>),
   copilot: (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L9 9l-7 1 5 5-1.5 7L12 18.5l6.5 3.5L17 15l5-5-7-1z"/></svg>),
   tasks: (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>),
@@ -47,6 +49,9 @@ export default function App() {
   const [copilotOpen, setCopilotOpen] = useState(false);
   const [cmdKOpen, setCmdKOpen] = useState(false);
   const [pageAction, setPageAction] = useState(null);
+  const [openDealId, setOpenDealId] = useState(null);
+
+  const openDealInPipeline = (dealId) => { setPage("journey"); setOpenDealId(dealId); };
 
   const handleCmdNavigate = (target) => {
     if (typeof target === "string") {
@@ -112,6 +117,7 @@ export default function App() {
     { id: "customers", label: "Clients" },
     { id: "contacts",  label: "Contacts" },
     { id: "journey",   label: "Pipeline" },
+    { id: "quotes",    label: "Quotes" },
     { id: "alerts",    label: "Analytics" },
   ];
 
@@ -230,7 +236,8 @@ export default function App() {
         {page === "dashboard" && <Dashboard API={API} />}
         {page === "customers" && <Customers API={API} pageAction={pageAction} clearAction={() => setPageAction(null)} />}
         {page === "contacts"  && <Contacts API={API} />}
-        {page === "journey"   && <Journey API={API} pageAction={pageAction} clearAction={() => setPageAction(null)} />}
+        {page === "journey"   && <Journey API={API} pageAction={pageAction} clearAction={() => setPageAction(null)} openDealId={openDealId} clearOpenDeal={() => setOpenDealId(null)} />}
+        {page === "quotes"    && <Quotes API={API} onOpenDeal={openDealInPipeline} />}
         {page === "alerts"    && <Alerts API={API} />}
         {page === "copilot"   && <CopilotPage />}
         {page === "tasks"     && <Tasks pageAction={pageAction} clearAction={() => setPageAction(null)} />}
