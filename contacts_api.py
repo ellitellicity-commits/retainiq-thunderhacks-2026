@@ -1,6 +1,7 @@
 import os, sqlite3
 from datetime import date
 from flask import Blueprint, request, jsonify
+from activities_api import log_activity
 
 contacts_bp = Blueprint("contacts_bp", __name__)
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "retainiq.db")
@@ -43,6 +44,11 @@ def create_contact():
     conn.commit(); rid = cur.lastrowid
     row = conn.execute(f"SELECT * FROM {TABLE} WHERE id=?", (rid,)).fetchone()
     conn.close()
+    log_activity(
+        client_id=row["client_id"],
+        type="contact_added",
+        notes=row["name"] + (f" ({row['title']})" if row["title"] else ""),
+    )
     return jsonify(dict(row))
 
 @contacts_bp.route("/api/db/contacts/<int:cid>", methods=["PATCH", "PUT"])
@@ -63,13 +69,26 @@ def update_contact(cid):
         conn.execute(f"UPDATE {TABLE} SET {', '.join(ups)} WHERE id=?", ps); conn.commit()
     row = conn.execute(f"SELECT * FROM {TABLE} WHERE id=?", (cid,)).fetchone()
     conn.close()
+    if ups:
+        log_activity(
+            client_id=row["client_id"],
+            type="contact_updated",
+            notes=row["name"] + (f" ({row['title']})" if row["title"] else ""),
+        )
     return jsonify(dict(row))
 
 @contacts_bp.route("/api/db/contacts/<int:cid>", methods=["DELETE"])
 def delete_contact(cid):
     conn = get_conn()
+    existing = conn.execute(f"SELECT * FROM {TABLE} WHERE id=?", (cid,)).fetchone()
     conn.execute(f"DELETE FROM {TABLE} WHERE id=?", (cid,))
     conn.commit(); conn.close()
+    if existing:
+        log_activity(
+            client_id=existing["client_id"],
+            type="contact_deleted",
+            notes=existing["name"],
+        )
     return jsonify({"ok": True})
 
 try:
